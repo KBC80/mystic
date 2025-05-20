@@ -5,12 +5,12 @@ import { initializeApp } from "firebase/app";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDqL1wBlez0mq_zMddSFOSYf0T-Nf2tdG4",
-  authDomain: "mystic-guide-hecgb.firebaseapp.com",
-  projectId: "mystic-guide-hecgb",
-  storageBucket: "mystic-guide-hecgb.firebasestorage.app",
-  messagingSenderId: "361959235440",
-  appId: "1:361959235440:web:0151c3248206faa41739b5"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 
 // Initialize Firebase
