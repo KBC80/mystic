@@ -195,7 +195,7 @@ export default function TarotReadingPage() {
                     key={rowIndex} 
                     className={cn(
                       "flex justify-center w-full overflow-x-auto scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent py-1 relative",
-                      rowIndex > 0 && "mt-[-48px] md:mt-[-72px]" 
+                      rowIndex > 0 && "mt-[-60px] sm:mt-[-76px] md:mt-[-94px] lg:mt-[-100px]" // 수직 겹침 조정 및 오타 수정
                     )}
                     style={{ zIndex: rowIndex }} 
                   >
@@ -205,7 +205,6 @@ export default function TarotReadingPage() {
                           key={card.id}
                           className={cn(
                             "transition-transform duration-200",
-                            // 카드 가로 겹침 조정 (기존보다 덜 겹치도록 값을 줄임)
                             cardIndex > 0 ? 'ml-[-36px] sm:ml-[-48px] md:ml-[-60px] lg:ml-[-70px]' : 'ml-0', 
                             !selectedCards.some(sc => sc.id === card.id) && !((selectedCards.length >= 3 && !selectedCards.some(sc => sc.id === card.id)) || isLoading) && "hover:translate-y-[-10px]"
                           )}
