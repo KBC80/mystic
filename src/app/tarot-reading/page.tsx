@@ -117,7 +117,7 @@ export default function TarotReadingPage() {
     router.push(`/tarot-reading/result?q=${encodeURIComponent(question)}&${cardParams}`);
   }
   
-  const numRows = 5; // 5줄로 변경
+  const numRows = 5; 
   const deckSlices: TarotCard[][] = [];
   if (deck.length > 0) {
     let startIndex = 0;
@@ -195,9 +195,9 @@ export default function TarotReadingPage() {
                     key={rowIndex} 
                     className={cn(
                       "flex justify-center w-full overflow-x-auto scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent py-1 relative",
-                      rowIndex > 0 && "mt-[-48px] md:mt-[-72px]" // 줄 간 겹침
+                      rowIndex > 0 && "mt-[-48px] md:mt-[-72px]" 
                     )}
-                    style={{ zIndex: rowIndex }} // 아랫줄이 위로 오도록
+                    style={{ zIndex: rowIndex }} 
                   >
                     <div className="flex items-end h-auto whitespace-nowrap px-4">
                       {rowCards.map((card, cardIndex) => (
@@ -205,8 +205,8 @@ export default function TarotReadingPage() {
                           key={card.id}
                           className={cn(
                             "transition-transform duration-200",
-                            // 카드 가로 겹침 강화
-                            cardIndex > 0 ? 'ml-[-48px] sm:ml-[-60px] md:ml-[-76px] lg:ml-[-84px]' : 'ml-0', 
+                            // 카드 가로 겹침 조정 (기존보다 덜 겹치도록 값을 줄임)
+                            cardIndex > 0 ? 'ml-[-36px] sm:ml-[-48px] md:ml-[-60px] lg:ml-[-70px]' : 'ml-0', 
                             !selectedCards.some(sc => sc.id === card.id) && !((selectedCards.length >= 3 && !selectedCards.some(sc => sc.id === card.id)) || isLoading) && "hover:translate-y-[-10px]"
                           )}
                         >
