@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import Script from 'next/script'; // Script 컴포넌트 import
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppHeader } from '@/components/layout/app-header';
+import { AppSidebar } from '@/components/layout/app-sidebar';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 
@@ -29,10 +30,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        {/* Google 애드센스 광고 스크립트 */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1164626264867058"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={cn(geistSans.variable, geistMono.variable, "antialiased font-sans")}>
-        {/* KakaoScriptLoader removed */}
         <SidebarProvider defaultOpen={true}>
-          <AppSidebar />
           <div className="flex flex-1 flex-col min-h-screen"> 
             <AppHeader />
             <main className="flex-1 flex flex-col p-4 md:p-6 lg:p-8"> 
