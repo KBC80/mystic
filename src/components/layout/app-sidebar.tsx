@@ -25,8 +25,8 @@ export function AppSidebar() {
     <Sidebar variant="sidebar" collapsible="icon" className="border-r">
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
-          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center">
-            <Image src="/image/main.png" alt="Mystic Muse 로고" width={24} height={24} className="object-contain"/>
+          <Button variant="ghost" size="icon" className="h-10 w-10 flex items-center justify-center">
+            <Image src="/image/main.png" alt="Mystic Muse 로고" width={32} height={32} className="object-contain"/>
           </Button>
           <h1 className="text-xl font-semibold text-sidebar-primary-foreground group-data-[collapsible=icon]:hidden break-words">
             Mystic Muse
