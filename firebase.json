@@ -9,5 +9,14 @@
       "firebase-debug.*.log",
       "functions"
     ]
+  },
+  "hosting": {
+    "apphosting": "mystic",
+    "public": "out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
   }
 }

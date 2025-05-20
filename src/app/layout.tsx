@@ -1,8 +1,9 @@
+
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import Script from 'next/script'; // Script 컴포넌트 import
-import { SidebarProvider } from '@/components/ui/sidebar';
+import Script from 'next/script';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppHeader } from '@/components/layout/app-header';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { Toaster } from '@/components/ui/toaster';
@@ -40,12 +41,13 @@ export default function RootLayout({
       </head>
       <body className={cn(geistSans.variable, geistMono.variable, "antialiased font-sans")}>
         <SidebarProvider defaultOpen={true}>
-          <div className="flex flex-1 flex-col min-h-screen"> 
+          <AppSidebar />
+          <SidebarInset> {/* SidebarInset이 AppHeader와 main 컨텐츠를 감싸도록 수정 */}
             <AppHeader />
-            <main className="flex-1 flex flex-col p-4 md:p-6 lg:p-8"> 
+            <main className="flex-1 p-4 md:p-6 lg:p-8">
               {children}
             </main>
-          </div>
+          </SidebarInset>
         </SidebarProvider>
         <Toaster />
       </body>
