@@ -34,7 +34,7 @@ type TarotReadingFormValues = z.infer<typeof formSchema>;
 const TarotCardDisplay = ({ card, onClick, isSelected, isDisabled }: { card: TarotCard; onClick: () => void; isSelected?: boolean; isDisabled?: boolean; }) => {
   const selectedStyle = isSelected ? {
     transform: 'translateY(-20px) scale(1.1)',
-    zIndex: 100,
+    zIndex: 100, // 선택된 카드가 항상 위에 오도록 z-index 증가
     boxShadow: '0 0 15px 5px hsl(var(--primary))',
   } : {};
   
@@ -44,7 +44,7 @@ const TarotCardDisplay = ({ card, onClick, isSelected, isDisabled }: { card: Tar
       disabled={isDisabled}
       className={cn(
         "rounded-lg overflow-hidden shadow-lg transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-accent relative",
-        "w-16 md:w-24 h-auto aspect-[2/3] inline-block", // 카드 크기: 모바일 w-16, md부터 w-24
+        "w-16 md:w-24 h-auto aspect-[2/3] inline-block", 
         (isDisabled && !isSelected) && "opacity-50 cursor-not-allowed",
       )}
       style={{ ...selectedStyle }}
@@ -117,7 +117,7 @@ export default function TarotReadingPage() {
     router.push(`/tarot-reading/result?q=${encodeURIComponent(question)}&${cardParams}`);
   }
   
-  const numRows = 3;
+  const numRows = 5; // 5줄로 변경
   const deckSlices: TarotCard[][] = [];
   if (deck.length > 0) {
     let startIndex = 0;
@@ -191,20 +191,22 @@ export default function TarotReadingPage() {
             ) : (
               <div className="space-y-3 py-4">
                 {deckSlices.map((rowCards, rowIndex) => (
-                  <div key={rowIndex} className="flex justify-center w-full overflow-x-auto scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent py-1">
+                  <div 
+                    key={rowIndex} 
+                    className={cn(
+                      "flex justify-center w-full overflow-x-auto scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent py-1 relative",
+                      rowIndex > 0 && "mt-[-48px] md:mt-[-72px]" // 줄 간 겹침
+                    )}
+                    style={{ zIndex: rowIndex }} // 아랫줄이 위로 오도록
+                  >
                     <div className="flex items-end h-auto whitespace-nowrap px-4">
                       {rowCards.map((card, cardIndex) => (
                         <div
                           key={card.id}
                           className={cn(
                             "transition-transform duration-200",
-                            // 모바일: ml-[-36px], sm: ml-[-40px], md: ml-[-48px], lg: ml-[-56px]
-                            // 기본 카드 폭: w-16 (64px), md부터: w-24 (96px)
-                            // 모바일에서 겹침 조정 (36px 겹침 -> 28px 노출)
-                            // sm에서는 40px 겹침 -> 24px 노출
-                            // md에서는 48px 겹침 -> 48px 노출 (절반)
-                            // lg에서는 56px 겹침 -> 40px 노출
-                            cardIndex > 0 ? 'ml-[-36px] sm:ml-[-40px] md:ml-[-48px] lg:ml-[-56px]' : 'ml-0', 
+                            // 카드 가로 겹침 강화
+                            cardIndex > 0 ? 'ml-[-48px] sm:ml-[-60px] md:ml-[-76px] lg:ml-[-84px]' : 'ml-0', 
                             !selectedCards.some(sc => sc.id === card.id) && !((selectedCards.length >= 3 && !selectedCards.some(sc => sc.id === card.id)) || isLoading) && "hover:translate-y-[-10px]"
                           )}
                         >
