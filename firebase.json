@@ -11,12 +11,20 @@
     ]
   },
   "hosting": {
-    "apphosting": "mystic",
-    "public": "out",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "mystic",
+          "region": "us-central1"
+        }
+      }
     ]
   }
 }

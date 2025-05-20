@@ -33,10 +33,12 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <head>
         {/* Google 애드센스 광고 스크립트 */}
-        <Script
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1164626264867058"
           crossOrigin="anonymous"
+          data-nscript="afterInteractive"
+          data-checked-head="true"
         />
       </head>
       <body className={cn(geistSans.variable, geistMono.variable, "antialiased font-sans")}>
@@ -54,3 +56,4 @@ export default function RootLayout({
     </html>
   );
 }
+
