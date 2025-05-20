@@ -2,8 +2,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import Image from "next/image";
-import { WandSparkles, PenTool, Baby, CloudMoon, LayoutGrid, Home, Ticket, Sparkles, Heart } from "lucide-react";
+import Image from "next/image"; // Image 컴포넌트 임포트
+import { PenTool, Baby, CloudMoon, LayoutGrid, Home, Ticket, Sparkles, Heart } from "lucide-react";
 
 export default function HomePage() {
   const features = [
@@ -18,8 +18,8 @@ export default function HomePage() {
   return (
     <div className="container mx-auto py-8 px-4">
       <header className="text-center mb-12">
-        <div className="inline-flex items-center justify-center p-3 bg-primary rounded-full mb-4 shadow-lg">
-          <WandSparkles className="h-12 w-12 text-primary-foreground" />
+        <div className="inline-flex items-center justify-center p-3 bg-primary rounded-full mb-4 shadow-lg h-24 w-24"> {/* h-24 w-24 to maintain circle with large image */}
+          <Image src="/image/main.png" alt="Mystic Muse 로고" width={48} height={48} className="object-contain"/>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold text-primary mb-2">
           Mystic Muse에 오신 것을 환영합니다
@@ -59,7 +59,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-
-
-
