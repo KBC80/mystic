@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 const TarotCardDisplay = ({ card }: { card: TarotCardType }) => {
   return (
     <div className="flex flex-col items-center">
-      <div className="w-40 h-auto aspect-[2/3] relative rounded-lg overflow-hidden shadow-lg mb-2">
+      <div className="w-32 md:w-40 h-auto aspect-[2/3] relative rounded-lg overflow-hidden shadow-lg mb-2">
         <Image src={card.imageUrl} alt={card.name} fill sizes="20vw" style={{ objectFit: 'cover' }} data-ai-hint={card.dataAiHint} />
       </div>
       <p className="font-semibold text-center text-sm break-words">{card.name}</p>
@@ -39,9 +39,11 @@ function TarotResultContent() {
     const c1Name = searchParams.get('c1');
     const c2Name = searchParams.get('c2');
     const c3Name = searchParams.get('c3');
+    const c4Name = searchParams.get('c4'); // New
+    const c5Name = searchParams.get('c5'); // New
 
-    if (!q || !c1Name || !c2Name || !c3Name) {
-      setError("필수 정보(질문 또는 카드)가 누락되었습니다.");
+    if (!q || !c1Name || !c2Name || !c3Name || !c4Name || !c5Name) { // Check for 5 cards
+      setError("필수 정보(질문 또는 카드 5장)가 누락되었습니다.");
       setIsLoading(false);
       return;
     }
@@ -50,14 +52,14 @@ function TarotResultContent() {
 
     const deck = generateDeck();
     const foundCards: TarotCardType[] = [];
-    [c1Name, c2Name, c3Name].forEach(name => {
+    [c1Name, c2Name, c3Name, c4Name, c5Name].forEach(name => { // Process 5 cards
       const card = deck.find(d => d.name === name);
       if (card) {
         foundCards.push({ ...card, isFaceUp: true });
       }
     });
 
-    if (foundCards.length !== 3) {
+    if (foundCards.length !== 5) { // Check for 5 cards
       setError("선택한 카드를 찾는 데 문제가 발생했습니다.");
       setIsLoading(false);
       return;
@@ -69,6 +71,8 @@ function TarotResultContent() {
       card1: c1Name,
       card2: c2Name,
       card3: c3Name,
+      card4: c4Name, // New
+      card5: c5Name, // New
     };
 
     tarotCardReading(input)
@@ -119,6 +123,14 @@ function TarotResultContent() {
     );
   }
 
+  const interpretations = [
+    result.card1Interpretation,
+    result.card2Interpretation,
+    result.card3Interpretation,
+    result.card4Interpretation,
+    result.card5Interpretation,
+  ];
+
   return (
     <div className="space-y-8 py-8 flex flex-col flex-1">
       <Card className="shadow-lg">
@@ -129,7 +141,7 @@ function TarotResultContent() {
           <CardDescription className="text-md pt-1 break-words">질문: "{question}"</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center mb-8 pt-4">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-8 pt-4">
             {selectedCardDetails.map((card) => (
               <TarotCardDisplay key={card.id} card={card} />
             ))}
@@ -140,7 +152,7 @@ function TarotResultContent() {
               <div key={card.id}>
                 <h3 className="text-xl font-semibold text-secondary-foreground mb-1 break-words">카드 {index + 1}: {card.name}</h3>
                 <p className="text-muted-foreground whitespace-pre-wrap text-base leading-relaxed">
-                  {index === 0 ? result.card1Interpretation : index === 1 ? result.card2Interpretation : result.card3Interpretation}
+                  {interpretations[index]}
                 </p>
               </div>
             ))}

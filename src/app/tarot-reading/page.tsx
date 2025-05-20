@@ -34,7 +34,7 @@ type TarotReadingFormValues = z.infer<typeof formSchema>;
 const TarotCardDisplay = ({ card, onClick, isSelected, isDisabled }: { card: TarotCard; onClick: () => void; isSelected?: boolean; isDisabled?: boolean; }) => {
   const selectedStyle = isSelected ? {
     transform: 'translateY(-20px) scale(1.1)',
-    zIndex: 100, // 선택된 카드가 항상 위에 오도록 z-index 증가
+    zIndex: 100, 
     boxShadow: '0 0 15px 5px hsl(var(--primary))',
   } : {};
   
@@ -94,7 +94,7 @@ export default function TarotReadingPage() {
 
     if (selectedCards.some(sc => sc.id === card.id)) {
       setSelectedCards(prev => prev.filter(c => c.id !== card.id)); 
-    } else if (selectedCards.length < 3) {
+    } else if (selectedCards.length < 5) { // Changed from 3 to 5
       setSelectedCards(prev => [...prev, card]);
     }
   };
@@ -108,8 +108,8 @@ export default function TarotReadingPage() {
   }
 
   async function goToInterpretationPage() {
-    if (selectedCards.length !== 3 || !form.getValues("question")) {
-      setError("질문을 입력하고 카드 3장을 선택해주세요.");
+    if (selectedCards.length !== 5 || !form.getValues("question")) { // Changed from 3 to 5
+      setError("질문을 입력하고 카드 5장을 선택해주세요.");
       return;
     }
     const question = form.getValues("question");
@@ -136,7 +136,7 @@ export default function TarotReadingPage() {
             <LayoutGrid className="text-primary h-6 w-6" /> 타로 운세
           </CardTitle>
           <CardDescription className="break-words">
-            질문을 하고, 카드를 섞고, 세 장을 선택하여 당신의 지침을 받으세요.
+            질문을 하고, 카드를 섞고, 다섯 장을 선택하여 당신의 지침을 받으세요.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -175,9 +175,9 @@ export default function TarotReadingPage() {
             <CardTitle className="text-xl break-words">카드 선택</CardTitle>
             <div className="flex justify-between items-center">
               <CardDescription className="break-words">
-                {selectedCards.length < 3 ? `${3 - selectedCards.length}장 더 선택해주세요.` : "모든 카드를 선택했습니다. 해석 준비 완료."}
+                {selectedCards.length < 5 ? `${5 - selectedCards.length}장 더 선택해주세요.` : "모든 카드를 선택했습니다. 해석 준비 완료."} 
               </CardDescription>
-              <Button onClick={shuffleDeck} variant="outline" size="sm" disabled={isShuffling || isLoading || (selectedCards.length >= 3 && !isLoading) }>
+              <Button onClick={shuffleDeck} variant="outline" size="sm" disabled={isShuffling || isLoading || (selectedCards.length >= 5 && !isLoading) }>
                 <Shuffle className={cn("mr-2 h-4 w-4", isShuffling && "animate-spin")} /> 덱 섞기
               </Button>
             </div>
@@ -195,7 +195,7 @@ export default function TarotReadingPage() {
                     key={rowIndex} 
                     className={cn(
                       "flex justify-center w-full overflow-x-auto scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent py-1 relative",
-                      rowIndex > 0 && "mt-[-60px] sm:mt-[-76px] md:mt-[-94px] lg:mt-[-100px]" // 수직 겹침 조정 및 오타 수정
+                      rowIndex > 0 && "mt-[-60px] sm:mt-[-76px] md:mt-[-94px] lg:mt-[-100px]"
                     )}
                     style={{ zIndex: rowIndex }} 
                   >
@@ -205,15 +205,15 @@ export default function TarotReadingPage() {
                           key={card.id}
                           className={cn(
                             "transition-transform duration-200",
-                            cardIndex > 0 ? 'ml-[-36px] sm:ml-[-48px] md:ml-[-60px] lg:ml-[-70px]' : 'ml-0', 
-                            !selectedCards.some(sc => sc.id === card.id) && !((selectedCards.length >= 3 && !selectedCards.some(sc => sc.id === card.id)) || isLoading) && "hover:translate-y-[-10px]"
+                            cardIndex > 0 ? 'ml-[-48px] sm:ml-[-58px] md:ml-[-70px]' : 'ml-0', 
+                            !selectedCards.some(sc => sc.id === card.id) && !((selectedCards.length >= 5 && !selectedCards.some(sc => sc.id === card.id)) || isLoading) && "hover:translate-y-[-10px]"
                           )}
                         >
                           <TarotCardDisplay
                             card={card}
                             onClick={() => handleCardSelect(card)}
                             isSelected={selectedCards.some(sc => sc.id === card.id)}
-                            isDisabled={(selectedCards.length >= 3 && !selectedCards.some(sc => sc.id === card.id)) || isLoading}
+                            isDisabled={(selectedCards.length >= 5 && !selectedCards.some(sc => sc.id === card.id)) || isLoading}
                           />
                         </div>
                       ))}
@@ -222,7 +222,7 @@ export default function TarotReadingPage() {
                 ))}
               </div>
             )}
-            {selectedCards.length === 3 && !isShuffling && (
+            {selectedCards.length === 5 && !isShuffling && ( // Changed from 3 to 5
               <Button onClick={goToInterpretationPage} disabled={isLoading} className="w-full mt-6 bg-accent hover:bg-accent/90 text-accent-foreground">
                 {isLoading ? <LoadingSpinner size={20} /> : "내 리딩 받기"}
               </Button>
@@ -231,7 +231,7 @@ export default function TarotReadingPage() {
         </Card>
       )}
       
-      {isLoading && !isShuffling && questionSubmitted && selectedCards.length !==3 && ( 
+      {isLoading && !isShuffling && questionSubmitted && selectedCards.length !==5 && ( 
         <div className="flex justify-center items-center p-6">
           <LoadingSpinner size={32} />
           <p className="ml-2 text-muted-foreground break-words">카드를 불러오는 중...</p>
