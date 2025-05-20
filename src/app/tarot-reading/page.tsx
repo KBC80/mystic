@@ -44,7 +44,7 @@ const TarotCardDisplay = ({ card, onClick, isSelected, isDisabled }: { card: Tar
       disabled={isDisabled}
       className={cn(
         "rounded-lg overflow-hidden shadow-lg transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-accent relative",
-        "w-16 md:w-24 h-auto aspect-[2/3] inline-block", 
+        "w-14 sm:w-14 md:w-24 lg:w-24 h-auto aspect-[2/3] inline-block", // 카드 크기 유지
         (isDisabled && !isSelected) && "opacity-50 cursor-not-allowed",
       )}
       style={{ ...selectedStyle }}
@@ -94,7 +94,7 @@ export default function TarotReadingPage() {
 
     if (selectedCards.some(sc => sc.id === card.id)) {
       setSelectedCards(prev => prev.filter(c => c.id !== card.id)); 
-    } else if (selectedCards.length < 5) { // Changed from 3 to 5
+    } else if (selectedCards.length < 5) {
       setSelectedCards(prev => [...prev, card]);
     }
   };
@@ -108,7 +108,7 @@ export default function TarotReadingPage() {
   }
 
   async function goToInterpretationPage() {
-    if (selectedCards.length !== 5 || !form.getValues("question")) { // Changed from 3 to 5
+    if (selectedCards.length !== 5 || !form.getValues("question")) {
       setError("질문을 입력하고 카드 5장을 선택해주세요.");
       return;
     }
@@ -189,15 +189,14 @@ export default function TarotReadingPage() {
                 <p className="ml-2 text-muted-foreground break-words">카드를 섞고 있습니다...</p>
               </div>
             ) : (
-              <div className="space-y-3 py-4">
+              <div className="space-y-1 py-4"> {/* 행 간 간격을 위해 space-y-1 추가, 세로 겹침 제거 */}
                 {deckSlices.map((rowCards, rowIndex) => (
                   <div 
                     key={rowIndex} 
                     className={cn(
-                      "flex justify-center w-full overflow-x-auto scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent py-1 relative",
-                      rowIndex > 0 && "mt-[-60px] sm:mt-[-76px] md:mt-[-94px] lg:mt-[-100px]"
+                      "flex justify-center w-full overflow-x-auto scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent py-1 relative"
+                      // 세로 겹침을 위한 mt-[-...] 클래스와 style={{ zIndex: rowIndex }} 제거
                     )}
-                    style={{ zIndex: rowIndex }} 
                   >
                     <div className="flex items-end h-auto whitespace-nowrap px-4">
                       {rowCards.map((card, cardIndex) => (
@@ -205,7 +204,8 @@ export default function TarotReadingPage() {
                           key={card.id}
                           className={cn(
                             "transition-transform duration-200",
-                            cardIndex > 0 ? 'ml-[-48px] sm:ml-[-58px] md:ml-[-70px]' : 'ml-0', 
+                            // 가로 겹침 조정: md 화면에서 겹침 완화
+                            cardIndex > 0 ? 'ml-[-36px] sm:ml-[-38px] md:ml-[-44px] lg:ml-[-58px]' : 'ml-0',
                             !selectedCards.some(sc => sc.id === card.id) && !((selectedCards.length >= 5 && !selectedCards.some(sc => sc.id === card.id)) || isLoading) && "hover:translate-y-[-10px]"
                           )}
                         >
@@ -222,7 +222,7 @@ export default function TarotReadingPage() {
                 ))}
               </div>
             )}
-            {selectedCards.length === 5 && !isShuffling && ( // Changed from 3 to 5
+            {selectedCards.length === 5 && !isShuffling && (
               <Button onClick={goToInterpretationPage} disabled={isLoading} className="w-full mt-6 bg-accent hover:bg-accent/90 text-accent-foreground">
                 {isLoading ? <LoadingSpinner size={20} /> : "내 리딩 받기"}
               </Button>

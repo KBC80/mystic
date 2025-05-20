@@ -19,7 +19,7 @@ export default function HomePage() {
     <div className="container mx-auto py-8 px-4">
       <header className="text-center mb-12">
         <div className="inline-flex items-center justify-center mb-4">
-          <Image src="/image/main.png" alt="Mystic Muse 로고" width={80} height={80} className="object-contain"/>
+          <Image src="/image/main.png" alt="Mystic Muse 로고" width={100} height={100} className="object-contain"/>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold text-primary mb-2">
           Mystic Muse에 오신 것을 환영합니다
