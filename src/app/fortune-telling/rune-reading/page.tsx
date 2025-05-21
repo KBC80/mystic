@@ -28,15 +28,14 @@ import {
 } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { Alert, AlertDescription, AlertTitle, AlertTriangle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { elderFutharkRunes, type Rune } from '@/lib/runes';
 import { interpretRunes, type RuneReadingInput, type RuneReadingOutput } from '@/ai/flows/rune-reading-flow';
 import Image from 'next/image';
-import { WandSparkles, Home, Shuffle, HandCoins, HelpCircle, Sparkles, RotateCcw } from 'lucide-react';
+import { WandSparkles, Home, Shuffle, HandCoins, HelpCircle, Sparkles, RotateCcw, Share, AlertTriangle } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import html2canvas from 'html2canvas';
 import { useToast } from '@/hooks/use-toast';
-import { Share } from 'lucide-react';
 
 
 const formSchema = z.object({
@@ -428,3 +427,4 @@ export default function RuneReadingPage() {
     </div>
   );
 }
+
