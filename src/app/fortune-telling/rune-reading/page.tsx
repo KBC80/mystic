@@ -28,15 +28,15 @@ import {
 } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle, AlertTriangle } from '@/components/ui/alert';
 import { elderFutharkRunes, type Rune } from '@/lib/runes';
 import { interpretRunes, type RuneReadingInput, type RuneReadingOutput } from '@/ai/flows/rune-reading-flow';
 import Image from 'next/image';
 import { WandSparkles, Home, Shuffle, HandCoins, HelpCircle, Sparkles, RotateCcw } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import html2canvas from 'html2canvas';
-    import { useToast } from '@/hooks/use-toast';
-    import { Share } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Share } from 'lucide-react';
 
 
 const formSchema = z.object({
@@ -90,9 +90,9 @@ export default function RuneReadingPage() {
   const [interpretation, setInterpretation] = useState<RuneReadingOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast(); // useToast 훅 사용
-  const resultAreaRef = useRef<HTMLDivElement>(null); // 이미지 저장할 영역 ref
-  // ... 나머지 변수 선언 (shuffledRunes, drawnRunesWithStatus 등)
+  const { toast } = useToast();
+  const resultAreaRef = useRef<HTMLDivElement>(null);
+  const [isSavingImage, setIsSavingImage] = useState(false);
 
   const form = useForm<RuneReadingFormValues>({
     resolver: zodResolver(formSchema),
@@ -116,34 +116,37 @@ export default function RuneReadingPage() {
       setInterpretation(null);
       setIsLoading(false);
       setStep('drawing');
-    }, 1000); // Simulate shuffling
+    }, 1000);
   };
 
   const handleDrawRune = (runeToDraw: Rune) => {
     if (drawnRunesWithStatus.length >= numToDraw || drawnRunesWithStatus.find(dr => dr.rune.id === runeToDraw.id)) {
       return;
     }
-    const isReversed = Math.random() < 0.5; // 50% chance of being reversed
+    const isReversed = Math.random() < 0.5;
     setDrawnRunesWithStatus(prev => [...prev, { rune: runeToDraw, isReversed }]);
   };
 
-  // 이미지 다운로드 핸들러
   const handleDownloadImage = async () => {
-    if (resultAreaRef.current) {
-      try {
-        const canvas = await html2canvas(resultAreaRef.current, { scale: 2 }); // 고해상도를 위해 scale 조정
-        const image = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = image;
-        // 파일명 설정: 질문 내용을 포함하거나 기본값 사용
-        const filename = `${form.getValues("question") || '룬운세'}_결과.png`;
-        link.download = filename;
-        link.click();
-        toast({ title: "이미지 저장 완료", description: "룬 운세 결과 이미지가 성공적으로 저장되었습니다." });
-      } catch (error) {
-        console.error("이미지 저장 중 오류 발생:", error);
-        toast({ title: "이미지 저장 실패", description: "이미지 저장 중 오류가 발생했습니다.", variant: "destructive" });
-      }
+    if (!resultAreaRef.current) {
+        toast({ title: "오류", description: "이미지 저장에 필요한 영역을 찾을 수 없습니다.", variant: "destructive" });
+        return;
+    }
+    setIsSavingImage(true);
+    try {
+      const canvas = await html2canvas(resultAreaRef.current, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = image;
+      const questionSummary = form.getValues("question")?.substring(0,20).replace(/\s+/g, '_') || '룬운세';
+      link.download = `${questionSummary}_결과.png`;
+      link.click();
+      toast({ title: "이미지 저장 완료", description: "룬 운세 결과 이미지가 성공적으로 저장되었습니다." });
+    } catch (error) {
+      console.error("이미지 저장 중 오류 발생:", error);
+      toast({ title: "이미지 저장 실패", description: "이미지 저장 중 오류가 발생했습니다.", variant: "destructive" });
+    } finally {
+      setIsSavingImage(false);
     }
   };
 
@@ -271,7 +274,7 @@ export default function RuneReadingPage() {
                           disabled={drawnRunesWithStatus.length >= numToDraw || drawnRunesWithStatus.some(dr => dr.rune.id === rune.id)}
                           className={cn(
                               "transition-all duration-200 transform",
-                              cardIndex > 0 ? 'ml-[-28px] md:ml-[-40px]' : 'ml-0', // Overlap for w-14/md:w-20
+                              cardIndex > 0 ? 'ml-[-28px] md:ml-[-40px]' : 'ml-0',
                               drawnRunesWithStatus.some(dr => dr.rune.id === rune.id) && "opacity-30 cursor-not-allowed",
                               !drawnRunesWithStatus.some(dr => dr.rune.id === rune.id) && !(drawnRunesWithStatus.length >= numToDraw) && "hover:scale-105 hover:-translate-y-2"
                           )}
@@ -303,8 +306,9 @@ export default function RuneReadingPage() {
             </div>
           )}
 
-          {error && (step === 'drawing' || step === 'initial') && (
+          {error && (step === 'drawing' || step === 'initial' || step === 'results') && (
              <Alert variant="destructive" className="mt-4">
+               <AlertTriangle className="h-4 w-4" />
                <AlertTitle>오류</AlertTitle>
                <AlertDescription className="break-words">{error}</AlertDescription>
              </Alert>
@@ -312,7 +316,7 @@ export default function RuneReadingPage() {
           
           {step === 'results' && interpretation && (
             <div className="space-y-6">
-              <Card ref={resultAreaRef}> {/* 여기에 ref={resultAreaRef} 를 추가 */}
+              <Card ref={resultAreaRef}>
                 <CardHeader>
                   <CardTitle className="text-2xl text-primary flex items-center gap-2">
                     <Sparkles className="h-6 w-6"/> 룬 해석 결과
@@ -359,14 +363,10 @@ export default function RuneReadingPage() {
                     </div>
                   </div>
                   </CardContent>
-                <CardFooter className="flex-col sm:flex-row items-center gap-4"> {/* 필요하다면 flex 속성 추가 */}
-                    <Button onClick={resetReading} variant="outline" className="w-full md:w-auto">
-                        <RotateCcw className="mr-2 h-4 w-4"/> 새로운 점 보기
-                    </Button>
-                    {/* 이미지 저장 버튼 추가 */}
-                    <Button onClick={handleDownloadImage} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
-                        <Share className="mr-2 h-4 w-4" /> {/* Share 아이콘 사용 */}
-                        결과 이미지 저장
+                <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
+                    <Button onClick={handleDownloadImage} disabled={isSavingImage} className="w-full sm:w-auto">
+                        <Share className="mr-2 h-4 w-4" />
+                        {isSavingImage ? '이미지 저장 중...' : '결과 이미지 저장'}
                     </Button>
                 </CardFooter>
               </Card>
@@ -406,8 +406,12 @@ export default function RuneReadingPage() {
         </Card>
       )}
 
-
       <div className="mt-auto pt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+        {step === 'results' && (
+          <Button onClick={resetReading} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+              <RotateCcw className="mr-2 h-4 w-4"/> 새로운 점 보기
+          </Button>
+        )}
         <Link href="/fortune-telling" passHref>
           <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
             <Sparkles className="mr-2 h-4 w-4" />
@@ -424,5 +428,3 @@ export default function RuneReadingPage() {
     </div>
   );
 }
-
-

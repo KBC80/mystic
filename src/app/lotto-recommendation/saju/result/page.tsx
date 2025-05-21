@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useRef } from 'react';
-import { useEffect, useState, Suspense } from 'react';
+import { useRef, useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { recommendLottoNumbers, type LottoNumberRecommendationInput, type LottoNumberRecommendationOutput } from '@/ai/flows/lotto-number-recommendation-flow';
-import html2canvas from 'html2canvas'; // html2canvas import
+import html2canvas from 'html2canvas';
 import { getLatestLottoDraw, type LatestWinningNumber } from '@/app/lotto-recommendation/saju/actions';
 import { Ticket, Home, Sparkles, MessageSquare, Hash, ExternalLink, RotateCcw, Newspaper, AlertTriangle, Share } from 'lucide-react';
 
@@ -32,37 +31,15 @@ const LottoBall = ({ number, size = 'medium' }: { number: number, size?: 'small'
   );
 };
 
-async function handleSaveAsImage(elementRef: React.RefObject<HTMLDivElement>, fileName: string) {
-  if (!elementRef.current) {
-    console.error("Cannot find element to capture.");
-    // 사용자에게 알림을 추가할 수 있습니다. (예: toast 메시지)
-    alert("이미지 저장에 필요한 요소를 찾을 수 없습니다.");
-    return;
-  }
-
-  try {
-    const canvas = await html2canvas(elementRef.current, { scale: 2 });
-    const link = document.createElement('a');
-    link.download = fileName;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-    link.remove();
-  } catch (err) {
-    console.error("Error capturing image:", err);
-    alert("이미지 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
-  }
-}
-
 function SajuLottoResultContent() {
   const searchParams = useSearchParams();
   const resultAreaRef = useRef<HTMLDivElement>(null);
-
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LottoNumberRecommendationOutput | null>(null);
   const [inputName, setInputName] = useState<string>("");
-
+  const [isSavingImage, setIsSavingImage] = useState(false);
   const [latestDraw, setLatestDraw] = useState<LatestWinningNumber | null>(null);
   const [isLoadingLatestDraw, setIsLoadingLatestDraw] = useState(true);
   const [latestDrawError, setLatestDrawError] = useState<string | null>(null);
@@ -120,6 +97,29 @@ function SajuLottoResultContent() {
 
   }, [searchParams]);
 
+  const handleSaveAsImage = async () => {
+    if (!resultAreaRef.current) {
+      console.error("Cannot find element to capture.");
+      alert("이미지 저장에 필요한 요소를 찾을 수 없습니다.");
+      return;
+    }
+    setIsSavingImage(true);
+    try {
+      const canvas = await html2canvas(resultAreaRef.current, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const link = document.createElement('a');
+      const nameForFile = inputName.replace(/\s*\(.*\)\s*$/, "").trim() || "사주로또";
+      link.download = `${nameForFile}_사주로또결과.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Error capturing image:", err);
+      alert("이미지 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsSavingImage(false);
+    }
+  };
+
   if (isLoading || isLoadingLatestDraw) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[calc(100vh-200px)] p-6">
@@ -135,6 +135,7 @@ function SajuLottoResultContent() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] p-4">
         <Alert variant="destructive" className="w-full max-w-md">
+          <AlertTriangle className="h-5 w-5" />
           <AlertTitle>오류</AlertTitle>
           <AlertDescription className="break-words">{error}</AlertDescription>
         </Alert>
@@ -157,8 +158,8 @@ function SajuLottoResultContent() {
   }
   
   return (
-    <div className="space-y-8 py-8 flex flex-col flex-1" ref={resultAreaRef}>
-      <Card className="shadow-lg">
+    <div className="space-y-8 py-8 flex flex-col flex-1">
+      <Card className="shadow-lg" ref={resultAreaRef}>
         <CardHeader>
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
             <Sparkles className="h-8 w-8 text-primary" /> {inputName}님을 위한 사주 로또 번호
@@ -222,12 +223,12 @@ function SajuLottoResultContent() {
         </CardContent>
          <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
            <Button
-             onClick={() => handleSaveAsImage(resultAreaRef, `saju_lotto_${inputName}.png`)}
-             disabled={isLoading}
-             variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto"
+             onClick={handleSaveAsImage}
+             disabled={isSavingImage}
+             className="w-full sm:w-auto"
            >
             <Share className="mr-2 h-4 w-4" />
-            결과 이미지 저장
+            {isSavingImage ? '이미지 저장 중...' : '결과 이미지 저장'}
            </Button>
         </CardFooter>
       </Card>
@@ -274,4 +275,3 @@ export default function SajuLottoResultPage() {
     </Suspense>
   );
 }
-

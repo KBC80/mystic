@@ -15,7 +15,7 @@ import { Star as StarIcon, Heart, Briefcase, ShieldCheck, ShoppingBag, CalendarC
 function HoroscopeResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const resultAreaRef = useRef<HTMLDivElement>(null); // 이미지 저장할 영역 ref
+  const resultAreaRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<GetWeeklyHoroscopeOutput | null>(null);
@@ -23,6 +23,7 @@ function HoroscopeResultContent() {
   const [inputBirthDate, setInputBirthDate] = useState<string>("");
   const [inputCalendarType, setInputCalendarType] = useState<string>("");
   const [inputGender, setInputGender] = useState<string>("");
+  const [isSavingImage, setIsSavingImage] = useState(false);
 
 
   useEffect(() => {
@@ -64,21 +65,30 @@ function HoroscopeResultContent() {
 
   }, [searchParams]);
 
-  // 이미지 다운로드 핸들러
   const handleDownloadImage = async () => {
-    if (resultAreaRef.current) {
-      try {
-        const canvas = await html2canvas(resultAreaRef.current, { scale: 2 }); // 고해상도를 위해 scale 조정
-        const image = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = image;
-        link.download = `${result?.zodiacSign || '별자리'}_별자리운세결과.png`; // 파일명 설정
-        link.click();
-      } catch (error) {
-        console.error("이미지 저장 중 오류 발생:", error);
-      }
+    if (!resultAreaRef.current) {
+      console.error("결과 영역을 찾을 수 없습니다.");
+      alert("이미지 저장에 필요한 정보를 찾을 수 없습니다.");
+      return;
+    }
+    setIsSavingImage(true);
+    try {
+      const canvas = await html2canvas(resultAreaRef.current, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = image;
+      const zodiacSign = result?.zodiacSign || "별자리";
+      const name = inputName.replace(/\s*\(.*\)\s*$/, "").trim() || "사용자";
+      link.download = `${name}_${zodiacSign}_별자리운세.png`;
+      link.click();
+    } catch (error) {
+      console.error("이미지 저장 중 오류 발생:", error);
+      alert("이미지 저장 중 오류가 발생했습니다.");
+    } finally {
+      setIsSavingImage(false);
     }
   };
+
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[calc(100vh-200px)] p-6">
@@ -114,8 +124,8 @@ function HoroscopeResultContent() {
   }
 
   return (
-    <div className="space-y-8 py-8 flex flex-col flex-1" ref={resultAreaRef}>
-      <Card className="shadow-lg">
+    <div className="space-y-8 py-8 flex flex-col flex-1">
+      <Card className="shadow-lg" ref={resultAreaRef}>
         <CardHeader>
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
             <StarIcon className="h-8 w-8 text-primary" /> {result.zodiacSign} 주간 운세
@@ -188,11 +198,9 @@ function HoroscopeResultContent() {
         </CardContent>
 
         <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
-          {/* ShareButton removed */}
-          {/* 이미지 저장 버튼 추가 */}
-           <Button onClick={handleDownloadImage} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+           <Button onClick={handleDownloadImage} disabled={isSavingImage} className="w-full sm:w-auto">
                <Share className="mr-2 h-4 w-4" />
-               결과 이미지 저장
+               {isSavingImage ? '이미지 저장 중...' : '결과 이미지 저장'}
            </Button>
         <Link href="/fortune-telling/horoscope" passHref>
             <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
@@ -231,4 +239,3 @@ export default function HoroscopeResultPage() {
     </Suspense>
   );
 }
-

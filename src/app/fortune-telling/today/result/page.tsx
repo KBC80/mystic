@@ -1,26 +1,26 @@
 
 "use client";
 
-import { useEffect, useState, Suspense, useRef } from 'react'; // useRef 임포트
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import html2canvas from 'html2canvas'; // html2canvas 임포트
+import html2canvas from 'html2canvas';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getDailyFortune, type GetDailyFortuneInput, type GetDailyFortuneOutput } from '@/ai/flows/todays-fortune-flow';
-import { CalendarHeart, Heart, Shield, Briefcase, Users, Star, Gift, Home, Sparkles, Palmtree, RotateCcw, Share } from 'lucide-react'; // Share 아이콘 임포트
+import { CalendarHeart, Heart, Shield, Briefcase, Users, Star, Gift, Home, Sparkles, Palmtree, RotateCcw, Share, AlertTriangle } from 'lucide-react';
 
-function TodaysFortuneResultContent() { // Share 아이콘 임포트
+function TodaysFortuneResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<GetDailyFortuneOutput | null>(null);
   const [inputName, setInputName] = useState<string>("");
-
-  const resultAreaRef = useRef<HTMLDivElement>(null); // 이미지 저장할 영역 ref
+  const [isSavingImage, setIsSavingImage] = useState(false);
+  const resultAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const name = searchParams.get('name');
@@ -59,19 +59,26 @@ function TodaysFortuneResultContent() { // Share 아이콘 임포트
 
   }, [searchParams]);
 
-  // 이미지 다운로드 핸들러
   const handleDownloadImage = async () => {
-    if (resultAreaRef.current) {
-      try {
-        const canvas = await html2canvas(resultAreaRef.current, { scale: 2 }); // 고해상도를 위해 scale 조정
-        const image = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = image;
-        link.download = `${inputName}_오늘의운세결과.png`; // 파일명 설정
-        link.click();
-      } catch (error) {
-        console.error("이미지 저장 중 오류 발생:", error);
-      }
+    if (!resultAreaRef.current) {
+      console.error("결과 영역을 찾을 수 없습니다.");
+      alert("이미지 저장에 필요한 정보를 찾을 수 없습니다.");
+      return;
+    }
+    setIsSavingImage(true);
+    try {
+      const canvas = await html2canvas(resultAreaRef.current, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = image;
+      const nameForFile = inputName.replace(/\s*\(.*\)\s*$/, "").trim() || "오늘의운세";
+      link.download = `${nameForFile}_오늘의운세결과.png`;
+      link.click();
+    } catch (error) {
+      console.error("이미지 저장 중 오류 발생:", error);
+      alert("이미지 저장 중 오류가 발생했습니다.");
+    } finally {
+      setIsSavingImage(false);
     }
   };
 
@@ -88,6 +95,7 @@ function TodaysFortuneResultContent() { // Share 아이콘 임포트
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] p-4">
         <Alert variant="destructive" className="w-full max-w-md">
+          <AlertTriangle className="h-5 w-5"/>
           <AlertTitle>오류</AlertTitle>
           <AlertDescription className="break-words">{error}</AlertDescription>
         </Alert>
@@ -110,8 +118,8 @@ function TodaysFortuneResultContent() { // Share 아이콘 임포트
   }
 
   return (
-    <div className="space-y-8 py-8 flex flex-col flex-1" ref={resultAreaRef}> {/* 이미지로 저장할 영역에 ref 연결 */}
-      <Card className="shadow-lg">
+    <div className="space-y-8 py-8 flex flex-col flex-1">
+      <Card className="shadow-lg" ref={resultAreaRef}>
         <CardHeader>
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
             <CalendarHeart className="h-8 w-8 text-primary" /> 오늘의 운세 ({inputName}님)
@@ -173,17 +181,12 @@ function TodaysFortuneResultContent() { // Share 아이콘 임포트
           </div>
         </CardContent>
          <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
-            {/* ShareButton removed */}
+           <Button onClick={handleDownloadImage} disabled={isSavingImage} className="w-full sm:w-auto">
+               <Share className="mr-2 h-4 w-4" />
+               {isSavingImage ? '이미지 저장 중...' : '결과 이미지 저장'}
+           </Button>
         </CardFooter>
       </Card>
-
-       {/* 이미지 저장 버튼 추가 */}
-       <div className="flex justify-center mt-8">
-           <Button onClick={handleDownloadImage} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
-               <Share className="mr-2 h-4 w-4" /> {/* Share 아이콘 사용 */}
-               결과 이미지 저장
-           </Button>
-       </div>
 
       <div className="mt-auto pt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
         <Link href="/fortune-telling/today" passHref>
@@ -221,4 +224,3 @@ export default function TodaysFortuneResultPage() {
     </Suspense>
   );
 }
-

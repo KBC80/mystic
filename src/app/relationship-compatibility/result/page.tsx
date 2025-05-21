@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, Suspense, useRef } from 'react'; // useRef 임포트
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getRelationshipCompatibility, type RelationshipCompatibilityInput, type RelationshipCompatibilityOutput } from '@/ai/flows/relationship-compatibility-flow';
-import { Home, Sparkles, User, Heart, Palette, BookOpen, Users2, CheckCircle, AlertTriangle, Gift, RotateCcw, Share } from 'lucide-react'; // Share 아이콘 임포트
+import { Home, Sparkles, User, Heart, Palette, BookOpen, Users2, CheckCircle, AlertTriangle, Gift, RotateCcw, Share } from 'lucide-react';
 import {
   ChartContainer,
   ChartTooltip,
@@ -18,7 +18,7 @@ import {
 import { PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import type { ChartConfig } from '@/components/ui/chart';
 import { cn } from "@/lib/utils";
-import html2canvas from 'html2canvas'; // html2canvas 임포트
+import html2canvas from 'html2canvas';
 
 const SectionCard: React.FC<{ title: string; icon?: React.ElementType; children: React.ReactNode; className?: string; }> = ({ title, icon: Icon, children, className }) => (
   <Card className={cn("bg-secondary/20 shadow-md", className)}>
@@ -41,8 +41,7 @@ const ohaengChartConfig = {
 } satisfies ChartConfig;
 
 const OhaengPieChart = ({ dataString, personLabel }: { dataString: string; personLabel: string }) => {
-  // Example dataString: "목2, 화1, 토1, 금1, 수0"
-  const ohaengData: { nameKey: keyof typeof ohaengChartConfig; name: string; value: number; fill: string }[] = dataString.split(',').map(item => { // nameKey 속성 포함 타입 명시
+  const ohaengData: { nameKey: keyof typeof ohaengChartConfig; name: string; value: number; fill: string }[] = dataString.split(',').map(item => {
     const parts = item.trim().match(/([가-힣]+)(\d+)/);
     if (!parts) return null;
     const nameKorean = parts[1];
@@ -52,7 +51,7 @@ const OhaengPieChart = ({ dataString, personLabel }: { dataString: string; perso
     ) as keyof typeof ohaengChartConfig | undefined;
 
     if (!nameKey || value === 0) return null;
-    return { nameKey, name: ohaengChartConfig[nameKey].label, value, fill: ohaengChartConfig[nameKey].color }; // nameKey 속성 포함 객체 반환
+    return { nameKey, name: ohaengChartConfig[nameKey].label, value, fill: ohaengChartConfig[nameKey].color };
   }).filter((item): item is { nameKey: keyof typeof ohaengChartConfig; name: string; value: number; fill: string } => item !== null && item.value > 0);
 
   if (!ohaengData || ohaengData.length === 0) {
@@ -85,8 +84,8 @@ function RelationshipCompatibilityResultContent() {
   const [result, setResult] = useState<RelationshipCompatibilityOutput | null>(null);
   const [person1Name, setPerson1Name] = useState("");
   const [person2Name, setPerson2Name] = useState("");
-
-  const resultAreaRef = useRef<HTMLDivElement>(null); // 이미지 저장할 영역 ref
+  const [isSavingImage, setIsSavingImage] = useState(false);
+  const resultAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const p1Name = searchParams.get('p1_name');
@@ -130,22 +129,30 @@ function RelationshipCompatibilityResultContent() {
 
   }, [searchParams]);
 
-  // 이미지 다운로드 핸들러
   const handleDownloadImage = async () => {
-    if (resultAreaRef.current) {
-      try {
-        const canvas = await html2canvas(resultAreaRef.current, { scale: 2 }); // 고해상도를 위해 scale 조정
-        const image = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = image;
-        link.download = `${person1Name}님과${person2Name}님_궁합결과.png`; // 파일명 설정
-        link.click();
-      } catch (error) {
-        console.error("이미지 저장 중 오류 발생:", error);
-        // 사용자에게 오류 메시지 표시 가능
-      }
+    if (!resultAreaRef.current) {
+      console.error("결과 영역을 찾을 수 없습니다.");
+      alert("이미지 저장에 필요한 정보를 찾을 수 없습니다.");
+      return;
+    }
+    setIsSavingImage(true);
+    try {
+      const canvas = await html2canvas(resultAreaRef.current, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = image;
+      const p1 = person1Name.replace(/\s*\(.*\)\s*$/, "").trim();
+      const p2 = person2Name.replace(/\s*\(.*\)\s*$/, "").trim();
+      link.download = `${p1}님과${p2}님_궁합결과.png`;
+      link.click();
+    } catch (error) {
+      console.error("이미지 저장 중 오류 발생:", error);
+      alert("이미지 저장 중 오류가 발생했습니다.");
+    } finally {
+      setIsSavingImage(false);
     }
   };
+
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[calc(100vh-200px)] p-6">
@@ -182,9 +189,9 @@ function RelationshipCompatibilityResultContent() {
   }
   
   const { 
- overallScore, overallGrade, sajuCompatibility, ohaengAnalysis, 
+    overallScore, overallGrade, sajuCompatibility, ohaengAnalysis, 
     sibsinYukchinAnalysis, nameHanjaHarmony, overallInterpretation, 
- strengths, weaknesses, improvementAdvice, luckyNumbers 
+    strengths, weaknesses, improvementAdvice, luckyNumbers 
   } = result;
 
   const getGradeColor = (grade: string) => {
@@ -194,92 +201,100 @@ function RelationshipCompatibilityResultContent() {
   };
 
   return (
-    <div className="space-y-6 py-6 flex flex-col flex-1" ref={resultAreaRef}> {/* 이미지로 저장할 영역에 ref 연결 */}
-      <Card className="shadow-lg border-primary/30 bg-primary/5 dark:bg-primary/10"> {/* ref={resultAreaRef} 를 제거 */}
-        <CardHeader className="pb-4">
-          <CardTitle className="text-3xl text-primary flex items-center gap-3">
-            <Heart className="h-8 w-8" /> {person1Name}님과 {person2Name}님의 천생연분 궁합
-          </CardTitle>
-          <CardDescription className="text-md pt-2 text-primary break-words">
-            <strong>궁합 총점: {overallScore}점</strong> / <strong className={`font-semibold px-1 py-0.5 rounded-md text-lg ${getGradeColor(overallGrade)}`}>{overallGrade}</strong>
-          </CardDescription>
-        </CardHeader>
-      </Card>
+    <div className="space-y-6 py-6 flex flex-col flex-1">
+      <div ref={resultAreaRef}>
+        <Card className="shadow-lg border-primary/30 bg-primary/5 dark:bg-primary/10">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-3xl text-primary flex items-center gap-3">
+              <Heart className="h-8 w-8" /> {person1Name}님과 {person2Name}님의 천생연분 궁합
+            </CardTitle>
+            <CardDescription className="text-md pt-2 text-primary break-words">
+              <strong>궁합 총점: {overallScore}점</strong> / <strong className={`font-semibold px-1 py-0.5 rounded-md text-lg ${getGradeColor(overallGrade)}`}>{overallGrade}</strong>
+            </CardDescription>
+          </CardHeader>
+        </Card>
 
-      <SectionCard title="사주팔자 조화도 분석" icon={User}>
-        <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{sajuCompatibility.analysisText}</p>
-      </SectionCard>
-      
-      <SectionCard title="오행 상생·상극 분석" icon={Palette}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-          <OhaengPieChart dataString={ohaengAnalysis.person1Ohaeng} personLabel={`${person1Name}님`} />
-          <OhaengPieChart dataString={ohaengAnalysis.person2Ohaeng} personLabel={`${person2Name}님`} />
-        </div>
-        <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{ohaengAnalysis.compatibilityDescription}</p>
-      </SectionCard>
+        <SectionCard title="사주팔자 조화도 분석" icon={User} className="mt-6">
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{sajuCompatibility.analysisText}</p>
+        </SectionCard>
+        
+        <SectionCard title="오행 상생·상극 분석" icon={Palette} className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+            <OhaengPieChart dataString={ohaengAnalysis.person1Ohaeng} personLabel={`${person1Name}님`} />
+            <OhaengPieChart dataString={ohaengAnalysis.person2Ohaeng} personLabel={`${person2Name}님`} />
+          </div>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{ohaengAnalysis.compatibilityDescription}</p>
+        </SectionCard>
 
-      <SectionCard title="십신 및 육친 관계 분석" icon={Users2}>
-        <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{sibsinYukchinAnalysis.description}</p>
-      </SectionCard>
+        <SectionCard title="십신 및 육친 관계 분석" icon={Users2} className="mt-6">
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{sibsinYukchinAnalysis.description}</p>
+        </SectionCard>
 
-      <SectionCard title="이름 한자 조화도 분석" icon={BookOpen}>
-        <div className="space-y-2">
-            <div>
-                <h4 className="font-semibold text-md text-secondary-foreground break-words">{person1Name}님 이름 분석:</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{nameHanjaHarmony.person1NameAnalysis}</p>
+        <SectionCard title="이름 한자 조화도 분석" icon={BookOpen} className="mt-6">
+          <div className="space-y-2">
+              <div>
+                  <h4 className="font-semibold text-md text-secondary-foreground break-words">{person1Name}님 이름 분석:</h4>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{nameHanjaHarmony.person1NameAnalysis}</p>
+              </div>
+              <div>
+                  <h4 className="font-semibold text-md text-secondary-foreground break-words">{person2Name}님 이름 분석:</h4>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{nameHanjaHarmony.person2NameAnalysis}</p>
+              </div>
+              <div>
+                  <h4 className="font-semibold text-md text-secondary-foreground break-words">이름 간 조화:</h4>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{nameHanjaHarmony.compatibilityDescription}</p>
+              </div>
+          </div>
+        </SectionCard>
+        
+        <SectionCard title="종합 해석 및 조언" icon={Sparkles} className="bg-card border-primary/50 mt-6">
+          <CardFooter className="p-0 pt-4 flex-col items-start gap-3">
+            <div className="space-y-4 w-full">
+                <div>
+                    <h4 className="font-semibold text-md text-secondary-foreground break-words">종합 해석:</h4>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{overallInterpretation}</p>
+                </div>
+                <div>
+                    <h4 className="font-semibold text-md text-secondary-foreground break-words">관계의 강점:</h4>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{strengths}</p>
+                </div>
+                <div>
+                    <h4 className="font-semibold text-md text-secondary-foreground break-words">관계의 약점 및 주의사항:</h4>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{weaknesses}</p>
+                </div>
+                <div>
+                    <h4 className="font-semibold text-md text-secondary-foreground break-words">관계 개선을 위한 조언:</h4>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{improvementAdvice}</p>
+                </div>
+                {luckyNumbers && luckyNumbers.length > 0 && (
+                  <div className="pt-2">
+                    <h4 className="font-semibold text-md text-secondary-foreground mb-1 flex items-center gap-1">
+                      <Gift className="h-4 w-4 text-yellow-500" /> 행운의 숫자
+                    </h4>
+                    <div className="flex space-x-2">
+                      {luckyNumbers.map((num) => (
+                        <span
+                          key={num}
+                          className="flex items-center justify-center h-10 w-10 rounded-full bg-accent text-accent-foreground font-bold text-lg shadow-md"
+                        >
+                          {num}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
             </div>
-            <div>
-                <h4 className="font-semibold text-md text-secondary-foreground break-words">{person2Name}님 이름 분석:</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{nameHanjaHarmony.person2NameAnalysis}</p>
+            <div className="pt-6 w-full">
+               <Button onClick={handleDownloadImage} disabled={isSavingImage} className="w-full sm:w-auto">
+                  <Share className="mr-2 h-4 w-4" />
+                  {isSavingImage ? '이미지 저장 중...' : '결과 이미지 저장'}
+               </Button>
             </div>
-            <div>
-                <h4 className="font-semibold text-md text-secondary-foreground break-words">이름 간 조화:</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{nameHanjaHarmony.compatibilityDescription}</p>
-            </div>
-        </div>
-      </SectionCard>
-      
-      <SectionCard title="종합 해석 및 조언" icon={Sparkles} className="bg-card border-primary/50">
-        <div className="space-y-4">
-            <div>
-                <h4 className="font-semibold text-md text-secondary-foreground break-words">종합 해석:</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{overallInterpretation}</p>
-            </div>
-            <div>
-                <h4 className="font-semibold text-md text-secondary-foreground break-words">관계의 강점:</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{strengths}</p>
-            </div>
-            <div>
-                <h4 className="font-semibold text-md text-secondary-foreground break-words">관계의 약점 및 주의사항:</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{weaknesses}</p>
-            </div>
-            <div>
-                <h4 className="font-semibold text-md text-secondary-foreground break-words">관계 개선을 위한 조언:</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{improvementAdvice}</p>
-            </div>
-        </div>
-      </SectionCard>
-      
-      <SectionCard title="행운의 숫자" icon={Gift}>
-        <div className="flex space-x-3">
-            {luckyNumbers.map((num) => (
-                <span key={num} className="flex items-center justify-center h-10 w-10 rounded-full bg-accent text-accent-foreground font-bold text-lg shadow-md">
-                {num}
-                </span>
-            ))}
-        </div>
-      </SectionCard>
+          </CardFooter>
+        </SectionCard>
+      </div>
 
-       {/* 이미지 저장 버튼 추가 */}
-       <div className="flex justify-center mt-8">
-           <Button onClick={handleDownloadImage} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
-               <Share className="mr-2 h-4 w-4" />
-               결과 이미지 저장
-           </Button>
-       </div>
-
-
-      <CardFooter className="pt-8 border-t flex flex-col sm:flex-row items-center justify-center gap-4">
+      <CardFooter className="mt-4 pt-6 border-t flex flex-col sm:flex-row items-center justify-center gap-4">
         <Button onClick={() => router.push('/relationship-compatibility')} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
           <RotateCcw className="mr-2 h-4 w-4" />
           다른 궁합 보기

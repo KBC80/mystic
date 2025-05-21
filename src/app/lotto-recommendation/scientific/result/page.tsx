@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useRef } from 'react';
-import { useEffect, useState, Suspense } from 'react';
+import { useRef, useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ import type { ScientificLottoRecommendationOutput } from '@/ai/flows/scientific-
 import { getLottoRecommendationsAction } from '@/app/lotto-recommendation/scientific/actions';
 import { getLatestLottoDraw, type LatestWinningNumber } from '@/app/lotto-recommendation/saju/actions'; 
 import html2canvas from 'html2canvas';
-import { Home, TestTubeDiagonal, Sparkles, Hash, FileText, ExternalLink, RotateCcw, Newspaper, AlertTriangle, Info } from 'lucide-react';
+import { Home, TestTubeDiagonal, Sparkles, Hash, FileText, ExternalLink, RotateCcw, Newspaper, AlertTriangle, Info, Share } from 'lucide-react';
 
 const getLottoBallColorClass = (number: number): string => {
   if (number >= 1 && number <= 10) return 'bg-yellow-400 text-black';
@@ -43,32 +42,12 @@ interface AnalysisDataForUI {
   notAppearedNumbers: number[];
 }
 
-async function handleSaveAsImage(elementRef: React.RefObject<HTMLDivElement>) {
-  if (!elementRef.current) {
-    console.error("결과 영역을 찾을 수 없습니다.");
-    return;
-  }
-
-  try {
-    const canvas = await html2canvas(elementRef.current, { scale: 2 }); // DPI를 높여 선명도 개선
-    const dataUrl = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = 'scientific_lotto_result.png';
-    link.href = dataUrl;
-    link.click();
-    link.remove(); // 링크 요소 제거
-  } catch (error) {
-    console.error("이미지 저장 중 오류 발생:", error);
-    alert("이미지 저장에 실패했습니다. 다시 시도해주세요.");
-  }
-}
-
 function ScientificLottoResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const resultAreaRef = useRef<HTMLDivElement>(null);
-
   const [isLoading, setIsLoading] = useState(true);
+  const [isSavingImage, setIsSavingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [llmResult, setLlmResult] = useState<ScientificLottoRecommendationOutput | null>(null);
   
@@ -76,11 +55,9 @@ function ScientificLottoResultContent() {
   const [excludeNumbersStr, setExcludeNumbersStr] = useState<string>("");
   const [analysisDataForUI, setAnalysisDataForUI] = useState<AnalysisDataForUI | null>(null);
 
-
   const [latestDraw, setLatestDraw] = useState<LatestWinningNumber | null>(null);
   const [isLoadingLatestDraw, setIsLoadingLatestDraw] = useState(true);
   const [latestDrawError, setLatestDrawError] = useState<string | null>(null);
-
 
   useEffect(() => {
     const includeParam = searchParams.get('includeNumbers');
@@ -139,6 +116,28 @@ function ScientificLottoResultContent() {
 
   }, [searchParams]);
 
+  const handleSaveAsImage = async () => {
+    if (!resultAreaRef.current) {
+      console.error("결과 영역을 찾을 수 없습니다.");
+      alert("이미지 저장에 필요한 정보를 찾을 수 없습니다.");
+      return;
+    }
+    setIsSavingImage(true);
+    try {
+      const canvas = await html2canvas(resultAreaRef.current, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `scientific_lotto_analysis_result.png`;
+      link.href = dataUrl;
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("이미지 저장 중 오류 발생:", error);
+      alert("이미지 저장에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSavingImage(false);
+    }
+  };
 
   if (isLoading || isLoadingLatestDraw) {
     return (
@@ -178,8 +177,8 @@ function ScientificLottoResultContent() {
   }
   
   return (
-    <div className="space-y-8 py-8 flex flex-col flex-1" ref={resultAreaRef}>
-      <Card className="shadow-lg">
+    <div className="space-y-8 py-8 flex flex-col flex-1">
+      <Card className="shadow-lg" ref={resultAreaRef}>
         <CardHeader>
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
             <Sparkles className="h-8 w-8 text-primary" /> AI 분석 기반 추천 번호
@@ -232,8 +231,8 @@ function ScientificLottoResultContent() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0 space-y-3">
-                  <p className="text-muted-foreground break-words">평균 당첨 번호 합계: <strong>{analysisDataForUI.averageSum.toFixed(1)}</strong></p>
-                  <p className="text-muted-foreground break-words">가장 흔한 짝수:홀수 비율: <strong>{analysisDataForUI.averageEvenOddRatio}</strong></p>
+                  <p className="text-muted-foreground break-words">예상 당첨 번호 합계 범위: <strong>{llmResult.predictedSumRange}</strong> (과거 평균: {analysisDataForUI.averageSum.toFixed(1)})</p>
+                  <p className="text-muted-foreground break-words">예상 짝수:홀수 비율: <strong>{llmResult.predictedEvenOddRatio}</strong> (과거 가장 흔한 비율: {analysisDataForUI.averageEvenOddRatio})</p>
                   
                   <div className="overflow-x-auto">
                     <Table>
@@ -291,7 +290,6 @@ function ScientificLottoResultContent() {
             </Card>
           )}
 
-
           {llmResult.recommendedSets.map((set, index) => (
             <Card key={index} className="p-6 bg-secondary/30 shadow-md">
                <CardHeader className="p-0 pb-3">
@@ -314,10 +312,12 @@ function ScientificLottoResultContent() {
         </CardContent>
          <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
            <Button
-             onClick={() => handleSaveAsImage(resultAreaRef)}
-             disabled={isLoading} // 로딩 중에는 버튼 비활성화
+             onClick={handleSaveAsImage}
+             disabled={isSavingImage}
+             className="w-full sm:w-auto"
            >
-             결과 이미지 저장
+             <Share className="mr-2 h-4 w-4" />
+             {isSavingImage ? '이미지 저장 중...' : '결과 이미지 저장'}
            </Button>
         </CardFooter>
       </Card>
@@ -364,5 +364,3 @@ export default function ScientificLottoResultPage() {
     </Suspense>
   );
 }
-
-
