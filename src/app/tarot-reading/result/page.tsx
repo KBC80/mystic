@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription, AlertTitle, AlertTriangle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle, WandSparkles, CheckCircle2, Gift, Home, RotateCcw, Share } from 'lucide-react';
 import { tarotCardReading, type TarotCardReadingOutput, type TarotCardReadingInput } from '@/ai/flows/tarot-card-reading';
 import { generateDeck, type TarotCard as TarotCardType } from '@/lib/tarot-cards'; 
 import Image from 'next/image';
-import { WandSparkles, CheckCircle2, Gift, Home, RotateCcw, Share } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const TarotCardDisplay = ({ card }: { card: TarotCardType }) => {
@@ -240,3 +240,4 @@ export default function TarotResultPage() {
     </Suspense>
   );
 }
+
