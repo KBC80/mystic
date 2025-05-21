@@ -1,17 +1,19 @@
 
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
+import html2canvas from 'html2canvas';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast'; // Fix useToast import path
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'; // Fix useToast import path
 import { tarotCardReading, type TarotCardReadingOutput, type TarotCardReadingInput } from '@/ai/flows/tarot-card-reading';
 import { generateDeck, type TarotCard as TarotCardType } from '@/lib/tarot-cards'; 
 import Image from 'next/image';
-import { WandSparkles, CheckCircle2, Gift, Home, RotateCcw } from 'lucide-react';
+import { WandSparkles, CheckCircle2, Gift, Home, RotateCcw, Share } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const TarotCardDisplay = ({ card }: { card: TarotCardType }) => {
@@ -28,6 +30,8 @@ const TarotCardDisplay = ({ card }: { card: TarotCardType }) => {
 function TarotResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { toast } = useToast();
+  const resultAreaRef = useRef<HTMLDivElement>(null); // 이미지 저장할 영역 ref
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TarotCardReadingOutput | null>(null);
@@ -89,6 +93,23 @@ function TarotResultContent() {
 
   }, [searchParams]);
 
+  // 이미지 다운로드 핸들러
+  const handleDownloadImage = async () => {
+    if (resultAreaRef.current) {
+      try {
+        const canvas = await html2canvas(resultAreaRef.current, { scale: 2 }); // 고해상도를 위해 scale 조정
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a'); // Modify filename to include question
+        link.href = image; // Modify filename to use question
+        link.download = `${question || '타로'}_타로결과.png`; // 파일명 설정
+        link.click();
+        toast({ title: "이미지 저장 완료", description: "타로 결과 이미지가 성공적으로 저장되었습니다." });
+      } catch (error) {
+        console.error("이미지 저장 중 오류 발생:", error);
+        toast({ title: "이미지 저장 실패", description: "이미지 저장 중 오류가 발생했습니다.", variant: "destructive" });
+      }
+    }
+  };
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[calc(100vh-200px)] p-6">
@@ -132,7 +153,7 @@ function TarotResultContent() {
   ];
 
   return (
-    <div className="space-y-8 py-8 flex flex-col flex-1">
+    <div className="space-y-8 py-8 flex flex-col flex-1" ref={resultAreaRef}> {/* 이미지로 저장할 영역에 ref 연결 */}
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
@@ -179,6 +200,11 @@ function TarotResultContent() {
             <RotateCcw className="mr-2 h-5 w-5"/> 새 리딩 시작
           </Button>
            {/* ShareButton removed */}
+           {/* 이미지 저장 버튼 추가 */}
+           <Button onClick={handleDownloadImage} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+               <Share className="mr-2 h-4 w-4" /> {/* Share 아이콘 사용 */}
+               결과 이미지 저장
+           </Button>
         </CardFooter>
       </Card>
 

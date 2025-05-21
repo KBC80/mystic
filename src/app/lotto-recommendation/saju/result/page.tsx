@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useRef } from 'react';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -9,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { recommendLottoNumbers, type LottoNumberRecommendationInput, type LottoNumberRecommendationOutput } from '@/ai/flows/lotto-number-recommendation-flow';
+import html2canvas from 'html2canvas'; // html2canvas import
 import { getLatestLottoDraw, type LatestWinningNumber } from '@/app/lotto-recommendation/saju/actions';
 import { Ticket, Home, Sparkles, MessageSquare, Hash, ExternalLink, RotateCcw, Newspaper, AlertTriangle } from 'lucide-react';
 
@@ -30,8 +32,27 @@ const LottoBall = ({ number, size = 'medium' }: { number: number, size?: 'small'
   );
 };
 
+function handleSaveAsImage(element: HTMLElement | null, fileName: string) {
+  if (!element) {
+    console.error("Cannot find element to capture.");
+    return;
+  }
+
+  html2canvas(element, { scale: 2 }).then((canvas) => {
+    const link = document.createElement('a');
+    link.download = fileName;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(err => {
+    console.error("Error capturing image:", err);
+    // 사용자에게 오류 알림 등을 추가할 수 있습니다.
+  });
+}
+
 function SajuLottoResultContent() {
   const searchParams = useSearchParams();
+  const resultAreaRef = useRef<HTMLDivElement>(null);
+
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -132,7 +153,7 @@ function SajuLottoResultContent() {
   }
   
   return (
-    <div className="space-y-8 py-8 flex flex-col flex-1">
+    <div className="space-y-8 py-8 flex flex-col flex-1" ref={resultAreaRef}>
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
@@ -196,7 +217,12 @@ function SajuLottoResultContent() {
           </div>
         </CardContent>
          <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
-           {/* ShareButton removed */}
+           {/* 이미지 저장 버튼 추가 */}
+           <Button
+             onClick={() => handleSaveAsImage(resultAreaRef.current, 'saju_lotto_result.png')}
+             disabled={isLoading} // 로딩 중에는 버튼 비활성화
+             variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto"
+           >결과 이미지 저장</Button>
         </CardFooter>
       </Card>
 

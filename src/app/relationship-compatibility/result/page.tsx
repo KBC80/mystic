@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react'; // useRef 임포트
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getRelationshipCompatibility, type RelationshipCompatibilityInput, type RelationshipCompatibilityOutput } from '@/ai/flows/relationship-compatibility-flow';
-import { Home, Sparkles, User, Heart, Palette, BookOpen, Users2, CheckCircle, AlertTriangle, Gift, RotateCcw } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { Home, Sparkles, User, Heart, Palette, BookOpen, Users2, CheckCircle, AlertTriangle, Gift, RotateCcw, Share } from 'lucide-react'; // Share 아이콘 임포트
 import {
   ChartContainer,
   ChartTooltip,
@@ -18,6 +17,8 @@ import {
 } from "@/components/ui/chart"
 import { PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import type { ChartConfig } from '@/components/ui/chart';
+import { cn } from "@/lib/utils";
+import html2canvas from 'html2canvas'; // html2canvas 임포트
 
 const SectionCard: React.FC<{ title: string; icon?: React.ElementType; children: React.ReactNode; className?: string; }> = ({ title, icon: Icon, children, className }) => (
   <Card className={cn("bg-secondary/20 shadow-md", className)}>
@@ -41,7 +42,7 @@ const ohaengChartConfig = {
 
 const OhaengPieChart = ({ dataString, personLabel }: { dataString: string; personLabel: string }) => {
   // Example dataString: "목2, 화1, 토1, 금1, 수0"
-  const ohaengData = dataString.split(',').map(item => {
+  const ohaengData: { nameKey: keyof typeof ohaengChartConfig; name: string; value: number; fill: string }[] = dataString.split(',').map(item => { // nameKey 속성 포함 타입 명시
     const parts = item.trim().match(/([가-힣]+)(\d+)/);
     if (!parts) return null;
     const nameKorean = parts[1];
@@ -51,8 +52,8 @@ const OhaengPieChart = ({ dataString, personLabel }: { dataString: string; perso
     ) as keyof typeof ohaengChartConfig | undefined;
 
     if (!nameKey || value === 0) return null;
-    return { nameKey, name: ohaengChartConfig[nameKey].label, value, fill: ohaengChartConfig[nameKey].color };
-  }).filter(item => item !== null && item.value > 0);
+    return { nameKey, name: ohaengChartConfig[nameKey].label, value, fill: ohaengChartConfig[nameKey].color }; // nameKey 속성 포함 객체 반환
+  }).filter((item): item is { nameKey: keyof typeof ohaengChartConfig; name: string; value: number; fill: string } => item !== null && item.value > 0);
 
   if (!ohaengData || ohaengData.length === 0) {
     return <p className="text-sm text-muted-foreground break-words">{personLabel}: 오행 데이터 분석 중 또는 데이터 없음.</p>;
@@ -84,6 +85,8 @@ function RelationshipCompatibilityResultContent() {
   const [result, setResult] = useState<RelationshipCompatibilityOutput | null>(null);
   const [person1Name, setPerson1Name] = useState("");
   const [person2Name, setPerson2Name] = useState("");
+
+  const resultAreaRef = useRef<HTMLDivElement>(null); // 이미지 저장할 영역 ref
 
   useEffect(() => {
     const p1Name = searchParams.get('p1_name');
@@ -127,6 +130,22 @@ function RelationshipCompatibilityResultContent() {
 
   }, [searchParams]);
 
+  // 이미지 다운로드 핸들러
+  const handleDownloadImage = async () => {
+    if (resultAreaRef.current) {
+      try {
+        const canvas = await html2canvas(resultAreaRef.current, { scale: 2 }); // 고해상도를 위해 scale 조정
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = `${person1Name}님과${person2Name}님_궁합결과.png`; // 파일명 설정
+        link.click();
+      } catch (error) {
+        console.error("이미지 저장 중 오류 발생:", error);
+        // 사용자에게 오류 메시지 표시 가능
+      }
+    }
+  };
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[calc(100vh-200px)] p-6">
@@ -175,8 +194,8 @@ function RelationshipCompatibilityResultContent() {
   };
 
   return (
-    <div className="space-y-6 py-6 flex flex-col flex-1">
-      <Card className="shadow-lg border-primary/30 bg-primary/5 dark:bg-primary/10">
+    <div className="space-y-6 py-6 flex flex-col flex-1" ref={resultAreaRef}> {/* 이미지로 저장할 영역에 ref 연결 */}
+      <Card className="shadow-lg border-primary/30 bg-primary/5 dark:bg-primary/10"> {/* ref={resultAreaRef} 를 제거 */}
         <CardHeader className="pb-4">
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
             <Heart className="h-8 w-8" /> {person1Name}님과 {person2Name}님의 천생연분 궁합
@@ -251,6 +270,14 @@ function RelationshipCompatibilityResultContent() {
         </div>
       </SectionCard>
 
+       {/* 이미지 저장 버튼 추가 */}
+       <div className="flex justify-center mt-8">
+           <Button onClick={handleDownloadImage} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+               <Share className="mr-2 h-4 w-4" />
+               결과 이미지 저장
+           </Button>
+       </div>
+
 
       <CardFooter className="pt-8 border-t flex flex-col sm:flex-row items-center justify-center gap-4">
         <Button onClick={() => router.push('/relationship-compatibility')} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
@@ -280,5 +307,3 @@ export default function RelationshipCompatibilityResultPage() {
     </Suspense>
   );
 }
-
-

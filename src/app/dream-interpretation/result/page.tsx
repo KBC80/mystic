@@ -1,21 +1,24 @@
 
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import html2canvas from 'html2canvas';
 import { dreamInterpretation, type DreamInterpretationOutput, type DreamInterpretationInput } from '@/ai/flows/dream-interpretation';
-import { CloudMoon, Sparkles, AlertTriangle, Gift, WandSparkles, Home, MessageCircle, RotateCcw } from 'lucide-react';
+import { CloudMoon, Sparkles, AlertTriangle, Gift, WandSparkles, Home, MessageCircle, RotateCcw, Share } from 'lucide-react';
 
 function DreamInterpretationResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const resultAreaRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSavingImage, setIsSavingImage] = useState(false);
   const [result, setResult] = useState<DreamInterpretationOutput | null>(null);
   const [dreamContent, setDreamContent] = useState<string>("");
 
@@ -45,6 +48,36 @@ function DreamInterpretationResultContent() {
       });
 
   }, [searchParams]);
+
+  const handleSaveAsImage = async () => {
+    if (!resultAreaRef.current) {
+      console.error("해몽 결과 영역을 찾을 수 없습니다.");
+      return;
+    }
+
+    setIsSavingImage(true);
+
+    try {
+      const canvas = await html2canvas(resultAreaRef.current, {
+        scale: 2, // 더 높은 해상도를 위해 스케일 증가
+        useCORS: true, // 이미지 로딩 시 CORS 문제 해결
+        backgroundColor: '#ffffff' // 배경색 설정 (필요에 따라)
+      });
+
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = 'dream_interpretation_result.png';
+      link.href = dataUrl; // 수정된 부분: 생성된 이미지 데이터 URL을 링크에 할당
+      link.click();
+
+    } catch (error) {
+      console.error('Failed to convert div to image', error);
+      // 사용자에게 오류 알림 (예: toast 메시지)
+      alert("이미지 저장에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSavingImage(false);
+    }
+  };
 
   const getOmenText = (omen?: 'good' | 'bad' | 'neutral') => {
     if (!omen) return '알 수 없음';
@@ -106,7 +139,7 @@ function DreamInterpretationResultContent() {
   
   return (
     <div className="space-y-8 py-8 flex flex-col flex-1">
-      <Card className="shadow-lg">
+      <Card className="shadow-lg" ref={resultAreaRef}>
         <CardHeader>
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
             <WandSparkles className="h-8 w-8 text-primary"/> 당신의 꿈 해석
@@ -169,7 +202,10 @@ function DreamInterpretationResultContent() {
           </div>
         </CardContent>
          <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
-           {/* ShareButton removed */}
+           <Button onClick={handleSaveAsImage} disabled={isSavingImage} className="w-full sm:w-auto">
+                <Share className="mr-2 h-4 w-4" />
+                {isSavingImage ? '이미지 저장 중...' : '결과 이미지 저장'}
+           </Button>
         </CardFooter>
       </Card>
 

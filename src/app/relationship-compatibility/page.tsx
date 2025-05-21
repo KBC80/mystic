@@ -226,7 +226,15 @@ export default function RelationshipCompatibilityPage() {
 
   const handleOpenHanjaModal = (fieldName: FieldPath<RelationshipCompatibilityFormValues>) => {
     const currentNameValue = form.getValues(fieldName);
-    const koreanOnlyName = currentNameValue.replace(/\s*\(.*\)\s*$/, "").trim();
+
+    // currentNameValue가 문자열이고 비어있지 않은지 확인
+    if (typeof currentNameValue !== 'string' || !currentNameValue) {
+        toast({ title: "알림", description: "한자로 변환할 한글 이름을 입력해주세요." });
+        return; // 문자열이 아니거나 비어있으면 여기서 함수 종료
+    }
+
+    // 이제 currentNameValue는 확실히 string 타입
+    const koreanOnlyName = currentNameValue.replace(/\s*\(.*?\)\s*$/, "").trim(); // 정규식 약간 수정
 
     if (!koreanOnlyName) {
       toast({ title: "알림", description: "한자로 변환할 한글 이름을 입력해주세요." });
@@ -282,8 +290,39 @@ export default function RelationshipCompatibilityPage() {
     
     const queryParams = new URLSearchParams();
     Object.entries(values.person1).forEach(([key, value]) => queryParams.append(`p1_${key}`, value));
-    Object.entries(values.person2).forEach(([key, value]) => queryParams.append(`p2_${key}`, value));
+
+    // person2의 값을 처리하되, gender는 유효한 값만 사용
+    let person2GenderIsValid = false;
+    Object.entries(values.person2).forEach(([key, value]) => {
+      if (key === 'gender') {
+        // value가 문자열이고 'female' 또는 'male'로 시작하면 해당 값만 사용
+        let cleanedGenderValue = value;
+        if (typeof value === 'string') {
+            if (value.startsWith('female')) {
+                cleanedGenderValue = 'female';
+ person2GenderIsValid = true;
+            } else if (value.startsWith('male')) {
+                cleanedGenderValue = 'male';
+ person2GenderIsValid = true;
+            }
+        }
+        if (cleanedGenderValue) {
+            queryParams.append(`p2_${key}`, cleanedGenderValue);
+        } else {
+            // 유효하지 않은 gender 값이 들어온 경우 로깅 및 에러 처리
+            console.error(`Invalid gender value for person2: ${value}`);
+            toast({ title: "오류", description: "두 번째 분의 성별 정보가 올바르지 않습니다. 다시 시도해주세요." });
+            setIsSubmitting(false);
+        }
+      } else {
+        queryParams.append(`p2_${key}`, value);
+      }
+    });
     
+    // 유효하지 않은 gender 값으로 인해 함수가 중간에 종료된 경우 리다이렉트 방지
+    if (!person2GenderIsValid) {
+ return;
+    }
     router.push(`/relationship-compatibility/result?${queryParams.toString()}`);
   }
 

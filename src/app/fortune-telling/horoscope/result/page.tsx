@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
+import html2canvas from 'html2canvas';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getWeeklyHoroscope, type GetWeeklyHoroscopeInput, type GetWeeklyHoroscopeOutput } from '@/ai/flows/horoscope-flow';
-import { Star as StarIcon, Heart, Briefcase, ShieldCheck, ShoppingBag, CalendarCheck, Home, Sparkles, RotateCcw, Gift, Info } from 'lucide-react';
+import { Star as StarIcon, Heart, Briefcase, ShieldCheck, ShoppingBag, CalendarCheck, Home, Sparkles, RotateCcw, Gift, Info, Share } from 'lucide-react';
 
 function HoroscopeResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const resultAreaRef = useRef<HTMLDivElement>(null); // 이미지 저장할 영역 ref
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<GetWeeklyHoroscopeOutput | null>(null);
@@ -62,6 +64,21 @@ function HoroscopeResultContent() {
 
   }, [searchParams]);
 
+  // 이미지 다운로드 핸들러
+  const handleDownloadImage = async () => {
+    if (resultAreaRef.current) {
+      try {
+        const canvas = await html2canvas(resultAreaRef.current, { scale: 2 }); // 고해상도를 위해 scale 조정
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = `${result?.zodiacSign || '별자리'}_별자리운세결과.png`; // 파일명 설정
+        link.click();
+      } catch (error) {
+        console.error("이미지 저장 중 오류 발생:", error);
+      }
+    }
+  };
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[calc(100vh-200px)] p-6">
@@ -97,7 +114,7 @@ function HoroscopeResultContent() {
   }
 
   return (
-    <div className="space-y-8 py-8 flex flex-col flex-1">
+    <div className="space-y-8 py-8 flex flex-col flex-1" ref={resultAreaRef}>
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
@@ -169,12 +186,14 @@ function HoroscopeResultContent() {
           </div>
 
         </CardContent>
-        <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
-           {/* ShareButton removed */}
-        </CardFooter>
-      </Card>
 
-      <div className="mt-auto pt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+        <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
+          {/* ShareButton removed */}
+          {/* 이미지 저장 버튼 추가 */}
+           <Button onClick={handleDownloadImage} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+               <Share className="mr-2 h-4 w-4" />
+               결과 이미지 저장
+           </Button>
         <Link href="/fortune-telling/horoscope" passHref>
             <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
                 <RotateCcw className="mr-2 h-4 w-4" />
@@ -193,7 +212,9 @@ function HoroscopeResultContent() {
             홈으로 돌아가기
           </Button>
         </Link>
-      </div>
+        </CardFooter>
+      </Card>
+
     </div>
   );
 }

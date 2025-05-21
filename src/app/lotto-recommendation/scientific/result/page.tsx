@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useRef } from 'react';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -12,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { ScientificLottoRecommendationOutput } from '@/ai/flows/scientific-lotto-recommendation-flow';
 import { getLottoRecommendationsAction } from '@/app/lotto-recommendation/scientific/actions';
 import { getLatestLottoDraw, type LatestWinningNumber } from '@/app/lotto-recommendation/saju/actions'; 
+import html2canvas from 'html2canvas';
 import { Home, TestTubeDiagonal, Sparkles, Hash, FileText, ExternalLink, RotateCcw, Newspaper, AlertTriangle, Info } from 'lucide-react';
 
 const getLottoBallColorClass = (number: number): string => {
@@ -41,9 +43,31 @@ interface AnalysisDataForUI {
   notAppearedNumbers: number[];
 }
 
+async function handleSaveAsImage(elementRef: React.RefObject<HTMLDivElement>) {
+  if (!elementRef.current) {
+    console.error("결과 영역을 찾을 수 없습니다.");
+    return;
+  }
+
+  try {
+    const canvas = await html2canvas(elementRef.current, { scale: 2 }); // DPI를 높여 선명도 개선
+    const dataUrl = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = 'scientific_lotto_result.png';
+    link.href = dataUrl;
+    link.click();
+    link.remove(); // 링크 요소 제거
+  } catch (error) {
+    console.error("이미지 저장 중 오류 발생:", error);
+    alert("이미지 저장에 실패했습니다. 다시 시도해주세요.");
+  }
+}
+
 function ScientificLottoResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const resultAreaRef = useRef<HTMLDivElement>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [llmResult, setLlmResult] = useState<ScientificLottoRecommendationOutput | null>(null);
@@ -154,7 +178,7 @@ function ScientificLottoResultContent() {
   }
   
   return (
-    <div className="space-y-8 py-8 flex flex-col flex-1">
+    <div className="space-y-8 py-8 flex flex-col flex-1" ref={resultAreaRef}>
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
@@ -289,7 +313,12 @@ function ScientificLottoResultContent() {
           ))}
         </CardContent>
          <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
-          
+           <Button
+             onClick={() => handleSaveAsImage(resultAreaRef)}
+             disabled={isLoading} // 로딩 중에는 버튼 비활성화
+           >
+             결과 이미지 저장
+           </Button>
         </CardFooter>
       </Card>
       

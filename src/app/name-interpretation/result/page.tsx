@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react'; // useRef 임포트
+import html2canvas from 'html2canvas'; // html2canvas 임포트
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { interpretName, type InterpretNameInput, type InterpretNameOutput, type SuriGyeokSchema as SuriGyeokType } from '@/ai/flows/name-interpretation-flow';
-import { Home, Sparkles, User, CalendarDays, Clock, Info, Palette, BookOpen, TrendingUp, Mic, Gem, Filter, CheckCircle, AlertTriangle, RotateCcw, PieChartIcon, Award, BarChart3, HelpCircle, Gift } from 'lucide-react';
+import { Home, Sparkles, User, CalendarDays, Clock, Info, Palette, BookOpen, TrendingUp, Mic, Gem, Filter, CheckCircle, AlertTriangle, RotateCcw, PieChartIcon, Award, BarChart3, HelpCircle, Gift, Share } from 'lucide-react'; // Share 아이콘 임포트
 import { Separator } from '@/components/ui/separator';
 import { cn } from "@/lib/utils";
 import { EAST_ASIAN_BIRTH_TIMES } from '@/lib/constants';
@@ -110,6 +111,8 @@ function NameInterpretationResultContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<InterpretNameOutput | null>(null);
+
+  const resultAreaRef = useRef<HTMLDivElement>(null); // 이미지 저장할 영역 ref
   
   useEffect(() => {
     const name = searchParams.get('name');
@@ -142,6 +145,21 @@ function NameInterpretationResultContent() {
 
   }, [searchParams]);
 
+    // 이미지 다운로드 핸들러
+  const handleDownloadImage = async () => {
+    if (resultAreaRef.current && result?.basicInfoSummary?.koreanName) {
+      try {
+        const canvas = await html2canvas(resultAreaRef.current, { scale: 2 }); // 고해상도를 위해 scale 조정
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = `${result.basicInfoSummary.koreanName}_이름풀이결과.png`; // 파일명 설정
+        link.click();
+      } catch (error) {
+        console.error("이미지 저장 중 오류 발생:", error);
+      }
+    }
+  };
   const getOverallGradeTextStyle = (grade?: string) => { 
     if (!grade) return 'text-foreground font-semibold';
     if (['매우 좋음', '좋음'].includes(grade)) return 'text-green-600 dark:text-green-400 font-semibold';
@@ -238,7 +256,9 @@ function NameInterpretationResultContent() {
 
 
   return (
-    <div className="space-y-6 py-6 flex flex-col flex-1">
+    // 이미지로 저장할 영역에 ref 연결
+    // 전체 결과 영역을 감싸는 div에 ref를 연결합니다.
+    <div className="space-y-6 py-6 flex flex-col flex-1" ref={resultAreaRef}>
       <Card className="shadow-xl bg-card dark:bg-card/90 border-primary/20">
         <CardHeader className="pb-4 rounded-t-lg">
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
@@ -417,6 +437,14 @@ function NameInterpretationResultContent() {
           )}
         </div>
       </SectionCard>
+
+       {/* 이미지 저장 버튼 추가 */}
+       <div className="flex justify-center mt-8">
+           <Button onClick={handleDownloadImage} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+               <Share className="mr-2 h-4 w-4" />
+               결과 이미지 저장
+           </Button>
+       </div>
 
 
       <CardFooter className="pt-8 border-t flex flex-col sm:flex-row items-center justify-center gap-4">

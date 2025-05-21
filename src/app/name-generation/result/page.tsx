@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react'; // useRef 임포트
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { generateAuspiciousName, type GenerateAuspiciousNameInput, type GenerateAuspiciousNameOutput } from '@/ai/flows/name-generation-flow';
-import { Baby, Sparkles, Home } from 'lucide-react';
+import { Baby, Sparkles, Home, Share } from 'lucide-react'; // Share 아이콘 임포트
+import html2canvas from 'html2canvas'; // html2canvas 임포트
 
 function NameGenerationResultContent() {
   const searchParams = useSearchParams();
@@ -20,6 +20,7 @@ function NameGenerationResultContent() {
   const [childLastName, setChildLastName] = useState<string>("");
   const [childGender, setChildGender] = useState<string>("");
 
+  const resultCardRef = useRef<HTMLDivElement>(null); // 결과 카드를 참조할 ref 생성
 
   useEffect(() => {
     const fatherName = searchParams.get('fatherName');
@@ -40,7 +41,7 @@ function NameGenerationResultContent() {
       setIsLoading(false);
       return;
     }
-    
+
     setChildLastName(cLastName);
     setChildGender(cGender === 'male' ? '아들' : '딸');
 
@@ -64,6 +65,57 @@ function NameGenerationResultContent() {
       });
 
   }, [searchParams]);
+
+  // 이미지 다운로드 핸들러
+  const handleDownloadImage = async () => {
+    if (resultCardRef.current) {
+      try {
+        const canvas = await html2canvas(resultCardRef.current, { scale: 2 }); // 고해상도를 위해 scale 조정
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = `${childLastName}${childGender}_작명결과.png`; // 파일명 설정
+        link.click();
+      } catch (error) {
+        console.error("이미지 저장 중 오류 발생:", error);
+        // 사용자에게 오류 메시지 표시 가능
+      }
+    }
+  };
+
+  // 웹 공유 API 핸들러 (선택 사항)
+  const handleShare = async () => {
+    if (resultCardRef.current) {
+      try {
+        const canvas = await html2canvas(resultCardRef.current, { scale: 2 });
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            const file = new File([blob], `${childLastName}${childGender}_작명결과.png`, { type: 'image/png' });
+            if (navigator.share) {
+              try {
+                await navigator.share({
+                  files: [file],
+                  title: `${childLastName}씨 ${childGender} 작명 결과`,
+                  text: 'AI가 추천하는 길운의 이름들을 확인해보세요!',
+                });
+                console.log('결과 공유 성공');
+              } catch (error) {
+                console.error('결과 공유 실패', error);
+              }
+            } else {
+              // Web Share API를 지원하지 않는 경우 대체 동작 (예: 이미지 다운로드 안내)
+              alert("이 브라우저는 공유 기능을 지원하지 않습니다. 이미지 저장 버튼을 이용해주세요.");
+              handleDownloadImage(); // 공유 대신 다운로드 실행
+            }
+          }
+        }, 'image/png');
+      } catch (error) {
+        console.error("이미지 생성 중 오류 발생:", error);
+        // 사용자에게 오류 메시지 표시 가능
+      }
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -98,10 +150,11 @@ function NameGenerationResultContent() {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-8 py-8 flex flex-col flex-1">
-      <Card className="shadow-lg">
+      {/* 결과 카드에 ref 연결 */}
+      <Card className="shadow-lg" ref={resultCardRef}>
         <CardHeader>
           <CardTitle className="text-3xl text-primary flex items-center gap-3">
             <Sparkles className="h-8 w-8 text-primary" /> {childLastName}씨 {childGender}를 위한 추천 이름
@@ -119,10 +172,20 @@ function NameGenerationResultContent() {
                 <p className="text-muted-foreground whitespace-pre-wrap"><strong className="text-secondary-foreground">음양오행 및 사주 조화:</strong> {name.yinYangFiveElements}</p>
               </div>
             </Card>
-          ))}
-        </CardContent>
+          ))}          </CardContent>
          <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
-           {/* ShareButton removed */}
+           {/* ShareButton 추가 */}
+            <Button onClick={handleDownloadImage} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+                <Share className="mr-2 h-4 w-4" />
+                결과 이미지 저장
+            </Button>
+             {/* Web Share API를 사용할 경우 아래 버튼 활성화 (선택 사항) */}
+            {/* {navigator.share && (
+               <Button onClick={handleShare} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+                   <Share className="mr-2 h-4 w-4" />
+                   결과 공유
+               </Button>
+            )} */}
         </CardFooter>
       </Card>
 
@@ -157,4 +220,3 @@ export default function NameGenerationResultPage() {
     </Suspense>
   );
 }
-

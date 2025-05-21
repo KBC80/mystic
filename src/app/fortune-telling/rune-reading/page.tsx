@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,6 +34,10 @@ import { interpretRunes, type RuneReadingInput, type RuneReadingOutput } from '@
 import Image from 'next/image';
 import { WandSparkles, Home, Shuffle, HandCoins, HelpCircle, Sparkles, RotateCcw } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import html2canvas from 'html2canvas';
+    import { useToast } from '@/hooks/use-toast';
+    import { Share } from 'lucide-react';
+
 
 const formSchema = z.object({
   question: z.string().optional(),
@@ -86,6 +90,9 @@ export default function RuneReadingPage() {
   const [interpretation, setInterpretation] = useState<RuneReadingOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast(); // useToast 훅 사용
+  const resultAreaRef = useRef<HTMLDivElement>(null); // 이미지 저장할 영역 ref
+  // ... 나머지 변수 선언 (shuffledRunes, drawnRunesWithStatus 등)
 
   const form = useForm<RuneReadingFormValues>({
     resolver: zodResolver(formSchema),
@@ -118,6 +125,26 @@ export default function RuneReadingPage() {
     }
     const isReversed = Math.random() < 0.5; // 50% chance of being reversed
     setDrawnRunesWithStatus(prev => [...prev, { rune: runeToDraw, isReversed }]);
+  };
+
+  // 이미지 다운로드 핸들러
+  const handleDownloadImage = async () => {
+    if (resultAreaRef.current) {
+      try {
+        const canvas = await html2canvas(resultAreaRef.current, { scale: 2 }); // 고해상도를 위해 scale 조정
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = image;
+        // 파일명 설정: 질문 내용을 포함하거나 기본값 사용
+        const filename = `${form.getValues("question") || '룬운세'}_결과.png`;
+        link.download = filename;
+        link.click();
+        toast({ title: "이미지 저장 완료", description: "룬 운세 결과 이미지가 성공적으로 저장되었습니다." });
+      } catch (error) {
+        console.error("이미지 저장 중 오류 발생:", error);
+        toast({ title: "이미지 저장 실패", description: "이미지 저장 중 오류가 발생했습니다.", variant: "destructive" });
+      }
+    }
   };
 
   const handleInterpretRunes = async () => {
@@ -285,7 +312,7 @@ export default function RuneReadingPage() {
           
           {step === 'results' && interpretation && (
             <div className="space-y-6">
-              <Card>
+              <Card ref={resultAreaRef}> {/* 여기에 ref={resultAreaRef} 를 추가 */}
                 <CardHeader>
                   <CardTitle className="text-2xl text-primary flex items-center gap-2">
                     <Sparkles className="h-6 w-6"/> 룬 해석 결과
@@ -331,10 +358,15 @@ export default function RuneReadingPage() {
                         ))}
                     </div>
                   </div>
-                </CardContent>
-                <CardFooter>
+                  </CardContent>
+                <CardFooter className="flex-col sm:flex-row items-center gap-4"> {/* 필요하다면 flex 속성 추가 */}
                     <Button onClick={resetReading} variant="outline" className="w-full md:w-auto">
                         <RotateCcw className="mr-2 h-4 w-4"/> 새로운 점 보기
+                    </Button>
+                    {/* 이미지 저장 버튼 추가 */}
+                    <Button onClick={handleDownloadImage} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+                        <Share className="mr-2 h-4 w-4" /> {/* Share 아이콘 사용 */}
+                        결과 이미지 저장
                     </Button>
                 </CardFooter>
               </Card>
