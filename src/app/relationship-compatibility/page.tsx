@@ -10,14 +10,14 @@ export default function RelationshipCompatibilityLandingPage() {
   const compatibilityTypes = [
     {
       title: "전통 사주 궁합",
-      href: "/relationship-compatibility/saju", // 이 경로는 아직 생성되지 않았지만, 전통 궁합 페이지가 있다면 해당 경로로 설정합니다.
-      icon: Users, // 기존 아이콘 유지 또는 변경 가능
+      href: "/relationship-compatibility/saju", // 링크는 이미 /saju 로 되어 있습니다.
+      icon: Users, 
       description: "두 분의 사주 명리학적 정보를 바탕으로 깊이 있는 관계 조화도를 분석해 드립니다."
     },
     {
-      title: "MBTI 궁합 테스트",
+      title: "MBTI 연애 궁합", // 명칭 변경
       href: "/relationship-compatibility/mbti",
-      icon: Brain, // MBTI에 어울리는 아이콘
+      icon: Brain, 
       description: "두 분의 MBTI 성격 유형을 기반으로 서로의 관계 역동성과 조언을 확인해보세요."
     }
   ];

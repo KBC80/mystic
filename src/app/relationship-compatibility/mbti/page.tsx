@@ -69,7 +69,7 @@ export default function MbtiCompatibilityPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center gap-2">
-            <Brain className="text-primary h-6 w-6" /> MBTI 궁합 테스트
+            <Brain className="text-primary h-6 w-6" /> MBTI 연애 궁합 
           </CardTitle>
           <CardDescription className="break-words">
             두 분의 MBTI 유형을 선택하여 서로의 관계 궁합을 알아보세요. 결과는 재미로 참고해주세요!
