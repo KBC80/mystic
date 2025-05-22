@@ -1,3 +1,4 @@
+
 import { config } from 'dotenv';
 config();
 
@@ -12,3 +13,4 @@ import '@/ai/flows/yearly-fortune-flow.ts'; // Added yearly fortune flow
 import '@/ai/flows/horoscope-flow.ts'; // Added horoscope flow
 import '@/ai/flows/rune-reading-flow.ts'; // Added rune reading flow
 import '@/ai/flows/relationship-compatibility-flow.ts'; // Added relationship compatibility flow
+import '@/ai/flows/mbti-compatibility-flow.ts'; // Added MBTI compatibility flow

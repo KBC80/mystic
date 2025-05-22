@@ -1,3 +1,4 @@
+
 export const EAST_ASIAN_BIRTH_TIMES = [
   { value: "자시", label: "자시 (23:00 - 00:59)" },
   { value: "축시", label: "축시 (01:00 - 02:59)" },
@@ -14,13 +15,6 @@ export const EAST_ASIAN_BIRTH_TIMES = [
   { value: "모름", label: "모름" },
 ];
 
-// NAME_TYPES is no longer directly used in the form for name interpretation
-// export const NAME_TYPES = [
-//   { value: "korean", label: "한글" },
-//   { value: "chinese", label: "한자" },
-//   { value: "english", label: "영문" },
-// ];
-
 export const CALENDAR_TYPES = [
   { value: "solar", label: "양력" },
   { value: "lunar", label: "음력" },
@@ -31,4 +25,12 @@ export const GENDER_OPTIONS = [
   { value: "female", label: "여성" },
 ];
 
+export const MBTI_TYPES = [
+  "ISTJ", "ISFJ", "INFJ", "INTJ",
+  "ISTP", "ISFP", "INFP", "INTP",
+  "ESTP", "ESFP", "ENFP", "ENTP",
+  "ESTJ", "ESFJ", "ENFJ", "ENTJ"
+];
+
+export const MBTI_OPTIONS = MBTI_TYPES.map(type => ({ value: type, label: type }));
     
