@@ -32,15 +32,18 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        {/* Google 애드센스 광고 스크립트 */}
-        <meta name="google-adsense-account" content="ca-pub-1164626264867058" />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1164626264867058"
-          crossOrigin="anonymous"
-          data-nscript="afterInteractive"
-          data-checked-head="true"
-        />
+      <meta name="google-site-verification" content="cCR-ztFIGjE3d_fBCL-MJ2ILmMI_iq-0tnbYkIciP9o" />
+      <meta name="naver-site-verification" content="0da5f9a2c067d35668f801c183d865aae7d8ea1e" />
+      <meta name="msvalidate.01" content="726E5D486B11503DB517C26BE9744A3E" />
+      {/* Google 애드센스 광고 스크립트 */}
+      <meta name="google-adsense-account" content="ca-pub-1164626264867058" />
+      <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1164626264867058"
+        crossOrigin="anonymous"
+        data-nscript="afterInteractive"
+        data-checked-head="true"
+      />
       </head>
       <body className={cn(geistSans.variable, geistMono.variable, "antialiased font-sans")}>
         <SidebarProvider defaultOpen={true}>

@@ -28,7 +28,7 @@ export default function FortuneTellingLandingPage() {
     },
     {
       title: "타로 운세",
-      href: "/tarot-reading", 
+      href: "/fortune-telling/tarot-reading", 
       icon: LayoutGrid, 
       description: "타로 카드를 통해 당신의 질문에 대한 통찰과 지침을 얻으세요."
     },
@@ -81,4 +81,3 @@ export default function FortuneTellingLandingPage() {
     </div>
   );
 }
-
