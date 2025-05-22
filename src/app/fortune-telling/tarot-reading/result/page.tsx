@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, WandSparkles, CheckCircle2, Gift, Home, RotateCcw, Share, Sparkles } from 'lucide-react';
+import { AlertTriangle, WandSparkles, CheckCircle2, Gift, Home, RotateCcw, Share } from 'lucide-react';
 import { tarotCardReading, type TarotCardReadingOutput, type TarotCardReadingInput } from '@/ai/flows/tarot-card-reading';
 import { generateDeck, type TarotCard as TarotCardType } from '@/lib/tarot-cards'; 
 import Image from 'next/image';
@@ -96,6 +96,7 @@ function TarotResultContent() {
 
   const handleDownloadImage = async () => {
     if (!resultAreaRef.current) {
+      console.error("결과 영역을 찾을 수 없습니다.");
       toast({ title: "오류", description: "이미지 저장에 필요한 영역을 찾을 수 없습니다.", variant: "destructive" });
       return;
     }
@@ -107,9 +108,7 @@ function TarotResultContent() {
       const questionSummary = question.substring(0, 20).replace(/\s+/g, '_') || '타로';
       link.href = image;
       link.download = `${questionSummary}_타로결과.png`;
-      document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
       toast({ title: "이미지 저장 완료", description: "타로 결과 이미지가 성공적으로 저장되었습니다." });
     } catch (error) {
       console.error("이미지 저장 중 오류 발생:", error);
@@ -136,7 +135,7 @@ function TarotResultContent() {
           <AlertTitle>해석 오류</AlertTitle>
           <AlertDescription className="break-words">{error}</AlertDescription>
         </Alert>
-        <Button onClick={() => router.push('/fortune-telling/tarot-reading')} variant="outline" className="mt-4">
+        <Button onClick={() => router.push('/tarot-reading')} variant="outline" className="mt-4">
           새 리딩 시작
         </Button>
       </div>
@@ -147,7 +146,7 @@ function TarotResultContent() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] p-4">
         <p className="text-muted-foreground break-words">결과를 표시할 수 없습니다.</p>
-        <Button onClick={() => router.push('/fortune-telling/tarot-reading')} variant="outline" className="mt-4">
+        <Button onClick={() => router.push('/tarot-reading')} variant="outline" className="mt-4">
           새 리딩 시작
         </Button>
       </div>
@@ -214,15 +213,9 @@ function TarotResultContent() {
       </Card>
 
       <div className="mt-auto pt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-        <Button onClick={() => router.push('/fortune-telling/tarot-reading')} variant="outline" size="lg" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
-          <RotateCcw className="mr-2 h-4 w-4"/> 새 리딩 시작
+        <Button onClick={() => router.push('/tarot-reading')} variant="outline" size="lg" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+          <RotateCcw className="mr-2 h-5 w-5"/> 새 리딩 시작
         </Button>
-        <Link href="/fortune-telling" passHref>
-          <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
-            <Sparkles className="mr-2 h-4 w-4" />
-            다른 운세보기
-          </Button>
-        </Link>
         <Link href="/" passHref>
           <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
             <Home className="mr-2 h-4 w-4" />

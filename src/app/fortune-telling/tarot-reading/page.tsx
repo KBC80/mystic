@@ -44,7 +44,7 @@ const TarotCardDisplay = ({ card, onClick, isSelected, isDisabled }: { card: Tar
       disabled={isDisabled}
       className={cn(
         "rounded-lg overflow-hidden shadow-lg transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-accent relative",
-        "w-14 sm:w-14 md:w-24 lg:w-24 h-auto aspect-[2/3] inline-block", 
+        "w-14 sm:w-14 md:w-24 lg:w-24 h-auto aspect-[2/3] inline-block", // 카드 크기 유지
         (isDisabled && !isSelected) && "opacity-50 cursor-not-allowed",
       )}
       style={{ ...selectedStyle }}
@@ -189,12 +189,13 @@ export default function TarotReadingPage() {
                 <p className="ml-2 text-muted-foreground break-words">카드를 섞고 있습니다...</p>
               </div>
             ) : (
-              <div className="space-y-1 py-4">
+              <div className="space-y-1 py-4"> {/* 행 간 간격을 위해 space-y-1 추가, 세로 겹침 제거 */}
                 {deckSlices.map((rowCards, rowIndex) => (
                   <div 
                     key={rowIndex} 
                     className={cn(
                       "flex justify-center w-full overflow-x-auto scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent py-1 relative"
+                      // 세로 겹침을 위한 mt-[-...] 클래스와 style={{ zIndex: rowIndex }} 제거
                     )}
                   >
                     <div className="flex items-end h-auto whitespace-nowrap px-4">
@@ -203,7 +204,8 @@ export default function TarotReadingPage() {
                           key={card.id}
                           className={cn(
                             "transition-transform duration-200",
-                            cardIndex > 0 ? 'ml-[-36px] sm:ml-[-36px] md:ml-[-30px] lg:ml-[-30px]' : 'ml-0',
+                            // 가로 겹침 조정: md 화면에서 겹침 완화
+                            cardIndex > 0 ? 'ml-[-36px] sm:ml-[-38px] md:ml-[-44px] lg:ml-[-58px]' : 'ml-0',
                             !selectedCards.some(sc => sc.id === card.id) && !((selectedCards.length >= 5 && !selectedCards.some(sc => sc.id === card.id)) || isLoading) && "hover:translate-y-[-10px]"
                           )}
                         >
@@ -238,7 +240,6 @@ export default function TarotReadingPage() {
 
       {error && (
         <Alert variant="destructive" className="mt-4">
-           <AlertTriangle className="h-4 w-4"/>
           <AlertTitle>오류</AlertTitle>
           <AlertDescription className="break-words">{error}</AlertDescription>
         </Alert>
@@ -255,3 +256,4 @@ export default function TarotReadingPage() {
     </div>
   );
 }
+
