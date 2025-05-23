@@ -15,18 +15,24 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription, // FormDescription 추가
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { UserCircle, Home, Sigma, Wand2, Sparkles } from 'lucide-react';
+import { UserCircle, Home, Sigma, Wand2, Sparkles, CalendarIcon } from 'lucide-react';
 import { HanjaSelectionModal } from '@/components/hanja-selection-modal';
 import { splitKoreanName, type HanjaDetail } from '@/lib/hanja-utils';
 import { useToast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(1, "이름을 입력해주세요."),
+  birthDate: z.string().min(1, "생년월일을 입력해주세요."),
 });
 
 type PersonalityNumberFormValues = z.infer<typeof formSchema>;
@@ -35,6 +41,7 @@ export default function PersonalityNumberPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const [isHanjaModalOpen, setIsHanjaModalOpen] = useState(false);
   const [nameSyllablesForModal, setNameSyllablesForModal] = useState<string[]>([]);
@@ -45,6 +52,7 @@ export default function PersonalityNumberPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      birthDate: "",
     },
   });
 
@@ -103,6 +111,7 @@ export default function PersonalityNumberPage() {
     setIsSubmitting(true);
     const queryParams = new URLSearchParams({
       name: values.name,
+      birthDate: values.birthDate,
     }).toString();
     
     router.push(`/fortune-telling/numerology/personality-number/result?${queryParams}`);
@@ -116,33 +125,82 @@ export default function PersonalityNumberPage() {
             <UserCircle className="text-primary h-6 w-6" /> 성격수 풀이
           </CardTitle>
           <CardDescription className="break-words">
-            당신의 이름 속에 비친 외적인 모습, 성격수를 통해 타인에게 비치는 당신의 인상을 알아보세요.
+            당신의 이름과 생년월일 속에 비친 외적인 모습, 성격수를 통해 타인에게 비치는 당신의 인상을 알아보세요.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>이름</FormLabel>
-                    <div className="flex items-center gap-2">
-                      <FormControl>
-                        <Input placeholder="한글 이름을 입력하세요 (예: 홍길동)" {...field} />
-                      </FormControl>
-                      <Button type="button" variant="outline" size="sm" onClick={() => handleOpenHanjaModal("name")}>
-                        <Wand2 className="mr-1 h-4 w-4" />한자 변환
-                      </Button>
-                    </div>
-                    <FormDescription className="break-words">
-                      한자 이름인 경우, 한글 이름 뒤 괄호 안에 한자를 넣어주세요 (예: 홍길동 (洪吉童)).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>이름</FormLabel>
+                      <div className="flex items-center gap-2">
+                        <FormControl>
+                          <Input placeholder="한글 이름을 입력하세요 (예: 홍길동)" {...field} />
+                        </FormControl>
+                        <Button type="button" variant="outline" size="sm" onClick={() => handleOpenHanjaModal("name")}>
+                          <Wand2 className="mr-1 h-4 w-4" />한자 변환
+                        </Button>
+                      </div>
+                      <FormDescription className="break-words">
+                        한자 이름인 경우, 한글 이름 뒤 괄호 안에 한자를 넣어주세요 (예: 홍길동 (洪吉童)).
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="birthDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>생년월일</FormLabel>
+                      <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(new Date(field.value), "PPP", { locale: ko })
+                              ) : (
+                                <span>생년월일을 선택하세요</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) => {
+                                field.onChange(date ? format(date, "yyyy-MM-dd") : "");
+                                setIsCalendarOpen(false);
+                              }
+                            }
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                            }
+                            fromYear={1900}
+                            toYear={new Date().getFullYear()}
+                            captionLayout="dropdown-buttons"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
                 {isSubmitting ? <LoadingSpinner size={20} /> : "성격수 확인하기"}
               </Button>

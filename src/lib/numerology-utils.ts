@@ -1,5 +1,5 @@
-
 // src/lib/numerology-utils.ts
+import { cardImageMap } from './tarot-cards';
 
 /**
  * 한글 자모와 숫자 매핑 (스텔라's 저니 블로그 기반)
@@ -146,4 +146,70 @@ export function calculatePersonalityNumber(name: string): number {
     }
   }
   return reduceNumber(totalValue);
+}
+
+// 수비학 숫자와 메이저 아르카나 카드 이름 매핑 (0-22)
+// 0번 바보, 22번도 바보 또는 세계로 통용되기도 함. 여기서는 0=바보, 22=바보로 설정.
+// 마스터 넘버 11, 22, 33에 대한 특별 매핑 추가.
+const numerologyToMajorArcana: { [key: number]: string } = {
+  0: "바보", 
+  1: "마법사",
+  2: "고위 여사제",
+  3: "여제",
+  4: "황제",
+  5: "교황",
+  6: "연인",
+  7: "전차",
+  8: "힘", 
+  9: "은둔자",
+  10: "운명의 수레바퀴",
+  11: "정의", // 마스터 넘버 11이 아닌 일반 숫자 11 또는 (1+1=2)의 경우
+  12: "매달린 남자",
+  13: "죽음",
+  14: "절제",
+  15: "악마",
+  16: "탑",
+  17: "별",
+  18: "달",
+  19: "태양",
+  20: "심판",
+  21: "세계",
+  22: "바보", // 마스터 넘버 22
+  // 33은 직접 매칭되는 카드가 없으므로, 3+3=6 (연인)으로 매칭
+};
+
+export function getTarotImageForNumerology(num: number): { name: string; imageUrl: string; dataAiHint: string } | null {
+  let tarotNumberToMap = num;
+
+  if (num === 33) { // 마스터 넘버 33 특별 처리
+    tarotNumberToMap = 6; // 연인 카드
+  } else if (num > 22) { // 마스터 넘버 33을 제외하고 22보다 큰 경우
+    tarotNumberToMap = reduceNumber(num); // 한 자리 또는 11, 22로 축소
+    // 만약 reduceNumber 결과가 여전히 22를 넘고 33이 아니라면 (예: 25->7), 이미 처리됨.
+    // reduceNumber가 11, 22, 33을 반환할 수 있음에 유의. 33은 위에서 처리.
+    if (tarotNumberToMap === 33) tarotNumberToMap = 6; 
+  }
+  // 이 시점에서 tarotNumberToMap은 0~22 사이의 값이거나, 11, 22 (마스터 넘버) 또는 6(33에서 변환)
+  
+  // 마스터 넘버 11, 22에 대한 매핑 우선 적용
+  let cardNameKey = tarotNumberToMap;
+  if (num === 11) cardNameKey = 11; // 힘 또는 정의 (여기서는 정의로 numerologyToMajorArcana에 정의됨)
+  else if (num === 22) cardNameKey = 22; // 바보 또는 세계 (여기서는 바보로 numerologyToMajorArcana에 정의됨)
+  // 그 외 숫자는 tarotNumberToMap (축소된 값 또는 원래 값) 사용
+
+  const cardName = numerologyToMajorArcana[cardNameKey];
+
+  if (cardName && cardImageMap[cardName]) {
+    const imageName = cardImageMap[cardName];
+    const hintName = cardName.toLowerCase().replace(/\s+/g, '');
+    const hintParts = hintName.match(/.{1,4}/g) || [];
+    const dataAiHint = `tarot ${hintParts.slice(0,2).join(" ")}`.trim();
+
+    return {
+      name: cardName,
+      imageUrl: `/image/${imageName}`, // 이미지 경로는 public/image/ 기준
+      dataAiHint: dataAiHint,
+    };
+  }
+  return null;
 }

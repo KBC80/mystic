@@ -34,7 +34,7 @@ if (tarotCardNames.length !== 78) {
 }
 
 
-const cardImageMap: { [key: string]: string } = {
+export const cardImageMap: { [key: string]: string } = {
   // Major Arcana
   "바보": "00-TheFool.jpg",
   "마법사": "01-TheMagician.jpg",

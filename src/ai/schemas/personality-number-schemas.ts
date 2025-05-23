@@ -6,6 +6,7 @@ import { z } from 'genkit';
 
 export const PersonalityNumberInputSchema = z.object({
   name: z.string().describe('성격수 분석을 위한 한글 이름입니다. (예: "홍길동")'),
+  birthDate: z.string().min(1, "생년월일을 입력해주세요.").describe("성격수 해석에 참고할 생년월일입니다. (YYYY-MM-DD 형식)"),
   personalityNumber: z.number().int().min(1).max(33).describe('TypeScript로 미리 계산된 성격수입니다. (1-9 또는 마스터 넘버 11, 22, 33)'),
 });
 export type PersonalityNumberInput = z.infer<typeof PersonalityNumberInputSchema>;
@@ -20,6 +21,6 @@ export const PersonalityNumberOutputSchema = z.object({
   luckyNumbers: z
     .array(z.number().int().min(1).max(45))
     .length(3)
-    .describe('이 성격수 {{{personalityNumber}}} 분석과 이름 "{{{name}}}"의 기운을 종합적으로 고려하여 1부터 45 사이의 서로 다른 행운의 숫자 3개를 다양하게, 특정 숫자에 편향되지 않도록 추천합니다.'),
+    .describe('이 성격수 {{{personalityNumber}}} 분석과, 이름 "{{{name}}}" 및 생년월일 "{{{birthDate}}}"의 기운을 종합적으로 고려하여 1부터 45 사이의 서로 다른 행운의 숫자 3개를 다양하게, 특정 숫자에 편향되지 않도록 추천합니다.'),
 });
 export type PersonalityNumberOutput = z.infer<typeof PersonalityNumberOutputSchema>;

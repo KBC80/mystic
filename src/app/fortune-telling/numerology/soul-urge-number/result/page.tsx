@@ -4,13 +4,15 @@
 import { useEffect, useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getSoulUrgeNumberAnalysis, type SoulUrgeNumberOutput } from '@/ai/flows/soul-urge-number-flow';
+import { getTarotImageForNumerology } from '@/lib/numerology-utils';
 import html2canvas from 'html2canvas';
-import { Home, Heart as HeartIcon, Sparkles, Sigma, Lightbulb, Gift, RotateCcw, Share, AlertTriangle, Target, TrendingUp } from 'lucide-react';
+import { Home, Heart as HeartIcon, Sparkles, Sigma, Lightbulb, Gift, RotateCcw, Share, AlertTriangle, Target, TrendingUp, BookOpen } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 const SectionCard: React.FC<{ title: string; icon?: React.ElementType; children: React.ReactNode; className?: string; }> = ({ title, icon: Icon, children, className }) => (
@@ -33,22 +35,30 @@ function SoulUrgeNumberResultContent() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SoulUrgeNumberOutput | null>(null);
   const [inputName, setInputName] = useState<string>("");
+  const [inputBirthDate, setInputBirthDate] = useState<string>("");
   const [isSavingImage, setIsSavingImage] = useState(false);
+  const [tarotImage, setTarotImage] = useState<{ name: string; imageUrl: string; dataAiHint: string; } | null>(null);
+
 
   useEffect(() => {
     const name = searchParams.get('name');
+    const birthDate = searchParams.get('birthDate');
 
-    if (!name) {
-      setError("이름 정보가 누락되었습니다. 다시 시도해주세요.");
+    if (!name || !birthDate) {
+      setError("이름 또는 생년월일 정보가 누락되었습니다. 다시 시도해주세요.");
       setIsLoading(false);
       return;
     }
     
     setInputName(name);
+    setInputBirthDate(birthDate);
 
-    getSoulUrgeNumberAnalysis({ name })
+    getSoulUrgeNumberAnalysis({ name, birthDate })
       .then(analysisResult => {
         setResult(analysisResult);
+        if (analysisResult?.soulUrgeNumber) {
+          setTarotImage(getTarotImageForNumerology(analysisResult.soulUrgeNumber));
+        }
       })
       .catch(err => {
         console.error("생명수 분석 결과 오류:", err);
@@ -100,7 +110,7 @@ function SoulUrgeNumberResultContent() {
           <AlertDescription className="break-words">{error}</AlertDescription>
         </Alert>
         <Button onClick={() => router.push('/fortune-telling/numerology/soul-urge-number')} variant="outline" className="mt-4">
-          다른 이름으로 분석
+          다른 정보로 분석
         </Button>
       </div>
     );
@@ -111,7 +121,7 @@ function SoulUrgeNumberResultContent() {
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] p-4">
         <p className="text-muted-foreground break-words">결과를 표시할 수 없습니다.</p>
          <Button onClick={() => router.push('/fortune-telling/numerology/soul-urge-number')} variant="outline" className="mt-4">
-          다른 이름으로 분석
+          다른 정보로 분석
         </Button>
       </div>
     );
@@ -125,10 +135,26 @@ function SoulUrgeNumberResultContent() {
             <CardTitle className="text-3xl text-primary flex items-center gap-3">
               <HeartIcon className="h-8 w-8" /> {inputName}님의 생명수 (영혼수): {result.soulUrgeNumber}
             </CardTitle>
+             <CardDescription className="text-sm pt-1 text-muted-foreground break-words">
+              (생년월일: {inputBirthDate} 참고)
+            </CardDescription>
             <CardDescription className="text-md pt-2 text-muted-foreground break-words">
               {result.summary}
             </CardDescription>
           </CardHeader>
+          {tarotImage && (
+            <CardContent className="flex flex-col items-center justify-center pt-2 pb-4">
+              <p className="text-sm font-medium text-secondary-foreground mb-1">생명수 {result.soulUrgeNumber}의 타로 상징: {tarotImage.name}</p>
+              <Image
+                src={tarotImage.imageUrl}
+                alt={tarotImage.name}
+                width={100}
+                height={150}
+                className="rounded-md shadow-md"
+                data-ai-hint={tarotImage.dataAiHint}
+              />
+            </CardContent>
+          )}
         </Card>
 
         <SectionCard title="내면의 깊은 욕망" icon={Sparkles} className="mt-6">
@@ -174,7 +200,7 @@ function SoulUrgeNumberResultContent() {
       <CardFooter className="mt-4 pt-6 border-t flex flex-col sm:flex-row items-center justify-center gap-4">
         <Button onClick={() => router.push('/fortune-telling/numerology/soul-urge-number')} variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
           <RotateCcw className="mr-2 h-4 w-4" />
-          다른 이름으로 분석
+          다른 정보로 분석
         </Button>
          <Link href="/fortune-telling/numerology" passHref>
           <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">

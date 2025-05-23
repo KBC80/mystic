@@ -4,13 +4,15 @@
 import { useEffect, useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getLifePathNumberAnalysis, type LifePathNumberInput, type LifePathNumberOutput } from '@/ai/flows/life-path-number-flow';
+import { getTarotImageForNumerology } from '@/lib/numerology-utils';
 import html2canvas from 'html2canvas';
-import { Home, Brain, Sparkles, Sigma, Briefcase, Users, Lightbulb, Gift, RotateCcw, Share, AlertTriangle, Palette } from 'lucide-react';
+import { Home, Brain, Sparkles, Sigma, Briefcase, Users, Lightbulb, Gift, RotateCcw, Share, AlertTriangle, Palette, BookOpen } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 const SectionCard: React.FC<{ title: string; icon?: React.ElementType; children: React.ReactNode; className?: string; }> = ({ title, icon: Icon, children, className }) => (
@@ -34,6 +36,8 @@ function LifePathNumberResultContent() {
   const [result, setResult] = useState<LifePathNumberOutput | null>(null);
   const [inputBirthDate, setInputBirthDate] = useState<string>("");
   const [isSavingImage, setIsSavingImage] = useState(false);
+  const [tarotImage, setTarotImage] = useState<{ name: string; imageUrl: string; dataAiHint: string; } | null>(null);
+
 
   useEffect(() => {
     const birthDate = searchParams.get('birthDate');
@@ -51,6 +55,9 @@ function LifePathNumberResultContent() {
     getLifePathNumberAnalysis(input)
       .then(analysisResult => {
         setResult(analysisResult);
+        if (analysisResult?.lifePathNumber) {
+          setTarotImage(getTarotImageForNumerology(analysisResult.lifePathNumber));
+        }
       })
       .catch(err => {
         console.error("인생여정수 분석 결과 오류:", err);
@@ -130,7 +137,20 @@ function LifePathNumberResultContent() {
               생년월일 ({inputBirthDate})을 바탕으로 분석된 당신의 인생여정수와 그 의미입니다.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+           {tarotImage && (
+            <CardContent className="flex flex-col items-center justify-center pt-2 pb-4">
+              <p className="text-sm font-medium text-secondary-foreground mb-1">인생여정수 {result.lifePathNumber}의 타로 상징: {tarotImage.name}</p>
+              <Image
+                src={tarotImage.imageUrl}
+                alt={tarotImage.name}
+                width={100} 
+                height={150}
+                className="rounded-md shadow-md"
+                data-ai-hint={tarotImage.dataAiHint}
+              />
+            </CardContent>
+          )}
+          <CardContent className="pt-2"> {/* 핵심 의미는 여기에 계속 표시 */}
             <p className="text-lg font-semibold text-secondary-foreground">{result.numberMeaning}</p>
           </CardContent>
         </Card>
