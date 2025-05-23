@@ -33,7 +33,7 @@ const RuneInterpretationSchema = z.object({
 const RuneReadingOutputSchema = z.object({
   runeInterpretations: z.array(RuneInterpretationSchema).describe('각각의 뽑힌 룬에 대한 해석 목록입니다.'),
   overallInterpretation: z.string().describe('뽑힌 룬들의 조합과 사용자의 질문(있는 경우)을 고려한 종합적인 해석 및 조언입니다. 각 룬이 어떻게 상호작용하는지 설명해야 합니다.'),
-  luckyNumbers: z.array(z.number().int().min(1).max(45)).length(3).describe('룬 리딩을 바탕으로 한 행운의 숫자 세 개입니다 (1-45 사이).'),
+  luckyNumbers: z.array(z.number().int().min(1).max(45)).length(3).describe('룬 리딩을 바탕으로 한 **서로 다른** 행운의 숫자 세 개를 **무작위로 다양하게, 특정 숫자에 편향되지 않도록** 추천합니다 (1-45 사이).'),
 });
 export type RuneReadingOutput = z.infer<typeof RuneReadingOutputSchema>;
 
@@ -76,7 +76,7 @@ const runeReadingPrompt = ai.definePrompt({
 각각의 뽑힌 룬에 대해 다음 정보를 포함하여 상세하고 심층적인 해석을 제공해주세요:
 1.  **개별 룬 해석**: 각 룬(이름, 한글이름, 심볼, 정/역방향 여부 명시)이 사용자의 질문(있는 경우)과 현재 상황에 비추어 어떤 의미를 가지는지 설명합니다. 룬의 정방향 또는 역방향 키워드를 참고하되, 단순히 나열하는 것이 아니라 깊이 있는 통찰을 담아 해석해야 합니다.
 2.  **종합 해석 및 조언**: 뽑힌 룬들의 조합이 전체적으로 어떤 메시지를 전달하는지, 각 룬이 서로 어떻게 영향을 미치는지, 그리고 사용자의 질문(있는 경우)에 대한 최종적인 답이나 조언은 무엇인지 설명합니다. 긍정적인 측면과 함께 주의해야 할 점이나 잠재적인 어려움도 균형 있게 언급해주세요.
-3.  **행운의 숫자**: 이 룬 리딩을 바탕으로 사용자에게 특별한 행운을 가져다 줄 1부터 45 사이의 숫자 3개를 추천해주세요.
+3.  **행운의 숫자**: 이 룬 리딩을 바탕으로 사용자에게 특별한 행운을 가져다 줄 1부터 45 사이의 **서로 다른** 숫자 3개를 **무작위로 다양하게, 특정 숫자에 편향되지 않도록** 추천해주세요.
 
 당신의 지혜와 직관으로 사용자의 길을 밝혀주세요. 룬의 목소리에 귀 기울여 명확성과 깊은 통찰을 전달하는 데 집중해주세요.
 `,

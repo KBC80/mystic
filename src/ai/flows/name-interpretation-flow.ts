@@ -129,7 +129,7 @@ const InterpretNameOutputSchema = z.object({
     inauspiciousHanja: z.array(z.string()).optional().describe('이름에 사용된 불용한자 목록 및 그 이유 (있는 경우)'),
     auspiciousHanja: z.array(z.string()).optional().describe('이름에 사용된 길한 한자 목록 및 그 이유 (있는 경우)'),
     generalAdvice: z.string().optional().describe('이름과 관련한 전반적인 조언, 추가적인 주의사항, 운세 개선을 위한 구체적인 해결방안이나 지니면 좋은 물건 등의 조언. 단순한 격려가 아닌, 실질적이고 구체적인 내용을 담아야 합니다.'),
-    luckyNumbers: z.array(z.number().int().min(1).max(45)).length(3).optional().describe('이름 풀이를 바탕으로 한 행운의 숫자 세 개 (1-45 사이).'),
+    luckyNumbers: z.array(z.number().int().min(1).max(45)).length(3).optional().describe('이름 풀이를 바탕으로 한 **서로 다른** 행운의 숫자 세 개를 **무작위로 다양하게, 특정 숫자에 편향되지 않도록** 추천합니다 (1-45 사이).'),
   }).describe('고려사항 및 조언'),
 });
 
@@ -201,7 +201,7 @@ const nameInterpretationPrompt = ai.definePrompt({
 4.  **주의사항 및 조언 (cautionsAndRecommendations):**
     *   이름에 사용된 한자 중 불용한자(뜻이 나쁘거나, 특정 성별/상황에만 쓰여 부적절한 글자)가 있는지 확인하고, 있다면 그 목록과 이유를 설명합니다. 또한, 이름에 사용된 한자 중 특별히 길한 의미를 가지거나 사주에 긍정적인 영향을 주는 한자가 있다면 그 목록과 이유(auspiciousHanja)도 함께 설명해주십시오.
     *   기타 이름과 관련하여 특별히 주의해야 할 점이나 개선을 위한 제언이 있다면 포함합니다. 전반적인 조언에는 운세를 개선하기 위한 구체적인 해결 방안(예: 특정 색상의 옷 착용, 특정 방향으로 침대 머리 두기, 지니면 좋은 물건 등)이나 추천 활동 등 **실질적이고 구체적인 조언** 포함. (generalAdvice)
-    *   **행운의 숫자 (luckyNumbers):** 이 이름 풀이를 바탕으로 사용자에게 특별한 행운을 가져다 줄 1부터 45 사이의 숫자 3개를 추천해주세요.
+    *   **행운의 숫자 (luckyNumbers):** 이 이름 풀이를 바탕으로 사용자에게 특별한 행운을 가져다 줄 1부터 45 사이의 **서로 다른** 숫자 3개를 **무작위로 다양하게, 특정 숫자에 편향되지 않도록** 추천해주세요.
 
 **이름풀이 결과 페이지 구성안 (아래 모든 항목을 반드시 채워주십시오. 단, 주역 괘 분석의 'interpretation'은 제외):**
 ... (기존 프롬프트의 상세 구성안 내용 참조) ...

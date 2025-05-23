@@ -28,7 +28,7 @@ const MbtiCompatibilityOutputSchema = z.object({
   weaknesses: z.string().describe('이 관계에서 주의해야 할 약점 또는 잠재적인 갈등 요소입니다.'),
   improvementTips: z.string().describe('관계를 더욱 발전시키거나 어려움을 극복하기 위한 실질적인 조언입니다. 각자의 성향을 고려한 구체적인 팁을 제공해주세요.'),
   recommendedActivities: z.string().describe('두 MBTI 유형이 함께하면 좋을 만한 활동이나 데이트 코스를 2~3가지 추천해주세요. 각 활동이 왜 두 유형에게 좋을 수 있는지 간단한 이유를 포함해주세요.'),
-  luckyNumbers: z.array(z.number().int().min(1).max(45)).length(3).describe('이 궁합 분석을 바탕으로 한 행운의 숫자 3개입니다 (1-45 사이).'),
+  luckyNumbers: z.array(z.number().int().min(1).max(45)).length(3).describe('이 궁합 분석을 바탕으로 한 **서로 다른** 행운의 숫자 3개를 **무작위로 다양하게, 특정 숫자에 편향되지 않도록** 추천합니다 (1-45 사이).'),
 });
 export type MbtiCompatibilityOutput = z.infer<typeof MbtiCompatibilityOutputSchema>;
 
@@ -61,7 +61,7 @@ const mbtiCompatibilityPrompt = ai.definePrompt({
     *   두 사람이 서로를 더 잘 이해하고, 더욱 건강하고 행복한 관계를 만들어가기 위한 실질적이고 구체적인 조언을 2-3가지 제시해주세요. 각 MBTI 유형의 특성을 고려하여 맞춤형 조언을 제공하는 것이 좋습니다. (예: {{{person1Mbti}}}에게는... {{{person2Mbti}}}에게는... 와 같이 표현하는 것도 좋습니다.)
 7.  **함께하면 좋은 활동 추천 (recommendedActivities):**
     *   두 MBTI 유형의 성향을 고려했을 때, 함께 즐기거나 서로를 더 잘 알아갈 수 있는 활동 또는 데이트 코스를 2-3가지 추천해주세요. 각 활동이 왜 이들에게 좋을 수 있는지 간단한 이유도 덧붙여주세요. (예: 자연 속에서 함께 산책하기 - 서로에게 편안함을 주며 깊은 대화를 나눌 수 있음, 새로운 취미 함께 배우기 - 공동의 목표를 통해 유대감을 강화할 수 있음 등)
-8.  **행운의 숫자 (luckyNumbers):** 이 MBTI 궁합 분석을 바탕으로 두 사람에게 행운을 가져다 줄 수 있는 1부터 45 사이의 숫자 3개를 추천해주세요.
+8.  **행운의 숫자 (luckyNumbers):** 이 MBTI 궁합 분석을 바탕으로 두 사람에게 행운을 가져다 줄 수 있는 1부터 45 사이의 **서로 다른** 숫자 3개를 **무작위로 다양하게, 특정 숫자에 편향되지 않도록** 추천해주세요.
 
 모든 분석은 각 MBTI 유형의 일반적인 특징에 기반하되, 지나치게 단정적이거나 부정적인 표현은 피해주세요. 사용자들이 관계에 대해 긍정적인 통찰을 얻고, 서로를 이해하는 데 도움이 되는 내용으로 구성해주세요.
 `,

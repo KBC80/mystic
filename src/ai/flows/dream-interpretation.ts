@@ -30,7 +30,7 @@ const DreamInterpretationOutputSchema = z.object({
   luckyNumbers: z
     .array(z.number().int().min(1).max(45))
     .length(3)
-    .describe('1에서 45 사이의 행운의 숫자 세 개입니다.'),
+    .describe('1에서 45 사이의 서로 다른 행운의 숫자 세 개를 무작위로 다양하게 추천합니다.'),
 });
 export type DreamInterpretationOutput = z.infer<typeof DreamInterpretationOutputSchema>;
 
@@ -46,7 +46,7 @@ const dreamInterpretationPrompt = ai.definePrompt({
 
   꿈 내용: {{{dreamContent}}}
 
-  해석을 바탕으로 사용자에게 실질적인 도움이 될 수 있는 추가적인 주의사항, 꿈이 암시하는 잠재적인 행운, 그리고 1에서 45 사이의 행운의 숫자 세 개를 제공해주세요.
+  해석을 바탕으로 사용자에게 실질적인 도움이 될 수 있는 추가적인 주의사항, 꿈이 암시하는 잠재적인 행운, 그리고 1에서 45 사이의 **서로 다른** 행운의 숫자 세 개를 **무작위로 다양하게, 특정 숫자에 편향되지 않도록** 제공해주세요.
   징조는 "good", "bad", "neutral" 중 하나여야 합니다. 당신의 깊이 있는 지혜로 사용자의 꿈에 담긴 메시지를 명확하게 풀어주세요.`,
 });
 
