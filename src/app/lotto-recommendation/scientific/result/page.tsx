@@ -12,7 +12,7 @@ import type { ScientificLottoRecommendationOutput } from '@/ai/flows/scientific-
 import { getLottoRecommendationsAction } from '@/app/lotto-recommendation/scientific/actions';
 import { getLatestLottoDraw, type LatestWinningNumber } from '@/app/lotto-recommendation/saju/actions';
 import html2canvas from 'html2canvas';
-import { Home, TestTubeDiagonal, Sparkles, Hash, FileText, ExternalLink, RotateCcw, Newspaper, AlertTriangle, Info, Share, ListChecks, TrendingUp, TrendingDown, EyeOff, Sigma } from 'lucide-react';
+import { Home, TestTubeDiagonal, Sparkles, Hash, FileText, ExternalLink, RotateCcw, Newspaper, AlertTriangle, Info, Share, ListChecks, TrendingUp, TrendingDown, EyeOff, Sigma, Ticket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const getLottoBallColorClass = (number: number): string => {
@@ -60,33 +60,39 @@ interface AnalysisDataForUI {
 }
 
 const StatItem = ({ title, value, icon: Icon }: { title: string, value: string | number, icon?: React.ElementType }) => (
-  <div className="flex items-start gap-2 p-3 bg-background rounded-md shadow-sm">
-    {Icon && <Icon className="h-5 w-5 text-primary mt-0.5" />}
-    <div>
-      <p className="text-sm font-semibold text-secondary-foreground break-words">{title}</p>
+  <Card className="shadow-sm p-4 bg-background">
+    <CardHeader className="p-0 pb-1 flex flex-row items-center gap-2">
+      {Icon && <Icon className="h-5 w-5 text-primary" />}
+      <CardTitle className="text-sm font-semibold text-secondary-foreground break-words">{title}</CardTitle>
+    </CardHeader>
+    <CardContent className="p-0">
       <p className="text-sm text-muted-foreground break-words">{value}</p>
-    </div>
-  </div>
+    </CardContent>
+  </Card>
 );
 
 const NumberStatList = ({ title, items, icon: Icon }: { title: string, items: { num: number, count: number }[] | number[], icon?: React.ElementType }) => (
-  <div>
-    <h4 className="text-md font-semibold text-secondary-foreground mb-2 flex items-center gap-1">
-      {Icon && <Icon className="h-4 w-4" />} {title}
-    </h4>
-    {items.length > 0 ? (
-      <div className="flex flex-wrap gap-2">
-        {(items as any[]).map((item, index) => (
-          <span key={index} className="text-sm bg-muted px-2 py-1 rounded-md text-muted-foreground shadow-sm">
-            {typeof item === 'number' ? item : `${item.num} (${item.count}회)`}
-          </span>
-        ))}
-      </div>
-    ) : (
-      <p className="text-sm text-muted-foreground">데이터 없음</p>
-    )}
-  </div>
+ <Card className="shadow-sm p-4 bg-background">
+    <CardHeader className="p-0 pb-2 flex flex-row items-center gap-2">
+      {Icon && <Icon className="h-5 w-5 text-primary" />}
+      <CardTitle className="text-sm font-semibold text-secondary-foreground break-words">{title}</CardTitle>
+    </CardHeader>
+    <CardContent className="p-0">
+      {items.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {(items as any[]).map((item, index) => (
+            <span key={index} className="text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground shadow-sm break-words">
+              {typeof item === 'number' ? item : `${item.num} (${item.count}회)`}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground break-words">데이터 없음</p>
+      )}
+    </CardContent>
+  </Card>
 );
+
 
 function ScientificLottoResultContent() {
   const searchParams = useSearchParams();
@@ -245,36 +251,40 @@ function ScientificLottoResultContent() {
         </CardHeader>
         <CardContent className="space-y-8">
           {latestDrawError && !isLoadingLatestDraw && (
-            <Alert variant="destructive" className="my-4">
+             <Alert variant="destructive" className="my-4">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>최신 정보 로딩 오류</AlertTitle>
               <AlertDescription className="break-words">{latestDrawError}</AlertDescription>
             </Alert>
           )}
           {latestDraw && !isLoadingLatestDraw && !latestDrawError && (
-            <div className="mb-6 p-4 border rounded-md bg-secondary/20 shadow-sm">
-              <h3 className="text-lg font-semibold text-secondary-foreground flex items-center mb-3">
-                <Newspaper className="mr-2 h-5 w-5 text-primary" />
-                최신 ({latestDraw.drwNo}회) 당첨 번호
-                <span className="text-xs text-muted-foreground ml-2">({latestDraw.drwNoDate})</span>
-              </h3>
-              <LottoNumberList numbers={latestDraw.numbers} bonusNumber={latestDraw.bnusNo} />
-            </div>
+            <Card className="shadow-sm p-4 bg-secondary/20">
+               <CardHeader className="p-0 pb-2 flex flex-row items-center justify-between">
+                  <CardTitle className="text-lg font-semibold text-secondary-foreground flex items-center">
+                    <Newspaper className="mr-2 h-5 w-5 text-primary" />
+                    최신 ({latestDraw.drwNo}회) 당첨 번호
+                  </CardTitle>
+                  <span className="text-xs text-muted-foreground">{latestDraw.drwNoDate}</span>
+              </CardHeader>
+              <CardContent className="p-0 mt-2">
+                <LottoNumberList numbers={latestDraw.numbers} bonusNumber={latestDraw.bnusNo} />
+              </CardContent>
+            </Card>
           )}
 
           {analysisDataForUI && (
-            <Card className="p-6 bg-card shadow-md">
+            <Card className="p-4 bg-card shadow-md">
                 <CardHeader className="p-0 pb-3">
-                    <CardTitle className="text-xl text-primary flex items-center gap-2">
+                    <CardTitle className="text-lg text-primary flex items-center gap-2">
                         <FileText className="h-5 w-5" /> 과거 데이터 분석 (최근 {analysisDataForUI.analyzedDrawsCount}회차 기준)
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="p-0 space-y-4">
+                <CardContent className="p-0 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <StatItem title="예상 당첨 번호 합계 범위" value={llmResult.predictedSumRange} icon={Sigma} />
                     <StatItem title="예상 짝수:홀수 비율" value={llmResult.predictedEvenOddRatio} icon={ListChecks} />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
                     {analysisDataForUI.frequentNumbers && analysisDataForUI.frequentNumbers.length > 0 && (
                         <NumberStatList title="자주 당첨된 번호" items={analysisDataForUI.frequentNumbers} icon={TrendingUp} />
                     )}
@@ -298,7 +308,7 @@ function ScientificLottoResultContent() {
                </CardHeader>
               <CardContent className="p-0 space-y-3">
                 <LottoNumberList numbers={set.numbers} />
-                <p className="text-base text-muted-foreground whitespace-pre-wrap break-words">
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words leading-relaxed">
                     <strong className="text-secondary-foreground">AI 추천 근거:</strong> {set.reasoning}
                 </p>
               </CardContent>
