@@ -15,3 +15,4 @@ import '@/ai/flows/rune-reading-flow.ts'; // Added rune reading flow
 import '@/ai/flows/relationship-compatibility-flow.ts'; // Added relationship compatibility flow
 import '@/ai/flows/mbti-compatibility-flow.ts'; // Added MBTI compatibility flow
 import '@/ai/flows/life-path-number-flow.ts'; // Added Life Path Number flow
+import '@/ai/flows/destiny-number-flow.ts'; // Added Destiny Number flow

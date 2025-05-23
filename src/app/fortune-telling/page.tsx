@@ -42,7 +42,7 @@ export default function FortuneTellingLandingPage() {
       title: "수비학 운세",
       href: "/fortune-telling/numerology",
       icon: Sigma,
-      description: "생년월일 속 숫자의 의미를 통해 당신의 성향과 인생 경로를 탐색해보세요."
+      description: "생년월일과 이름 속 숫자의 의미를 통해 당신의 성향과 인생 경로를 탐색해보세요."
     }
   ];
 

@@ -4,15 +4,21 @@
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Home, Brain, Sigma, Sparkles } from 'lucide-react';
+import { Home, Brain, Sigma, Sparkles, Star } from 'lucide-react';
 
 export default function NumerologyLandingPage() {
   const numerologyTypes = [
     {
       title: "인생여정수 풀이",
       href: "/fortune-telling/numerology/life-path",
-      icon: Brain, // Using Brain as a placeholder, consider a more specific numerology icon if available
+      icon: Brain, 
       description: "당신의 생년월일에 숨겨진 인생여정수를 통해 성격, 재능, 삶의 과제 등을 알아보세요."
+    },
+    {
+      title: "운명수 풀이",
+      href: "/fortune-telling/numerology/destiny-number",
+      icon: Star, 
+      description: "당신의 이름에 담긴 운명수를 통해 타고난 성향, 잠재력, 삶의 방향을 알아보세요."
     },
     // Future numerology services can be added here
   ];
