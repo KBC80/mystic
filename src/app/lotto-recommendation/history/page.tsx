@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Home, Archive, Search, AlertTriangle, User, Gift, ExternalLink } from 'lucide-react'; 
+import { Home, Archive, Search, AlertTriangle, User, Gift, ExternalLink, Ticket } from 'lucide-react'; 
 import { fetchHistoricalDraw, getRecentHistoricalDraws, type HistoricalDrawData } from './actions';
 
 const getLottoBallColorClass = (number: number): string => {
@@ -21,8 +21,8 @@ const getLottoBallColorClass = (number: number): string => {
   return 'bg-gray-300 text-black';
 };
 
-const LottoBall = ({ number, size = 'medium' }: { number: number, size?: 'small' | 'medium' }) => {
-  const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-lg';
+const LottoBall = ({ number, size = 'small' }: { number: number, size?: 'small' | 'medium' }) => {
+  const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-sm';
   return (
     <div className={`flex items-center justify-center rounded-full font-bold shadow-md ${sizeClasses} ${getLottoBallColorClass(number)}`}>
       {number}
@@ -55,7 +55,7 @@ export default function LottoHistoryPage() {
         setRecentDraws(data.recentDraws || []);
         if (data.latestDrawNo) {
             setLatestDrawNo(data.latestDrawNo);
-            setDrawNoInput(data.latestDrawNo.toString()); // Initialize input with latest draw number
+            setDrawNoInput(data.latestDrawNo.toString()); 
         }
       }
       setIsLoadingRecent(false);
@@ -120,17 +120,17 @@ export default function LottoHistoryPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>회차</TableHead>
-                    <TableHead>추첨일</TableHead>
+                    <TableHead className="whitespace-nowrap">회차</TableHead>
+                    <TableHead className="whitespace-nowrap">추첨일</TableHead>
                     <TableHead>당첨번호 + 보너스</TableHead>
-                    <TableHead className="text-center">1등 당첨자/금액</TableHead>
+                    <TableHead className="text-center whitespace-nowrap">1등 당첨자/금액</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {recentDraws.map((draw) => (
                     <TableRow key={draw.drwNo}>
-                      <TableCell>{draw.drwNo}회</TableCell>
-                      <TableCell>{draw.drwNoDate}</TableCell>
+                      <TableCell className="whitespace-nowrap">{draw.drwNo}회</TableCell>
+                      <TableCell className="whitespace-nowrap">{draw.drwNoDate}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1 items-center">
                           {draw.numbers.map(num => <LottoBall key={`recent-${draw.drwNo}-${num}`} number={num} size="small" />)}
@@ -139,7 +139,7 @@ export default function LottoHistoryPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-1">
+                          <div className="flex items-center justify-center gap-1 whitespace-nowrap">
                               <User className="h-4 w-4 text-muted-foreground"/> {draw.firstPrzwnerCo}명
                           </div>
                           <div className="text-xs text-muted-foreground break-words">
@@ -187,7 +187,7 @@ export default function LottoHistoryPage() {
             </div>
           )}
 
-          {error && isLoadingSelected === false && ( // Show error only if not loading another request
+          {error && isLoadingSelected === false && ( 
              <Alert variant="destructive" className="mt-4">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>조회 오류</AlertTitle>
@@ -204,13 +204,13 @@ export default function LottoHistoryPage() {
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold text-md text-foreground">당첨 번호</h4>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {selectedDraw.numbers.map(num => <LottoBall key={`selected-${selectedDraw.drwNo}-${num}`} number={num} />)}
+                  <div className="flex flex-wrap gap-1 mt-1 items-center">
+                    {selectedDraw.numbers.map(num => <LottoBall key={`selected-${selectedDraw.drwNo}-${num}`} number={num} size="small" />)}
                   </div>
                 </div>
                 <div>
                   <h4 className="font-semibold text-md text-foreground">보너스 번호</h4>
-                  <LottoBall number={selectedDraw.bnusNo} />
+                  <LottoBall number={selectedDraw.bnusNo} size="small" />
                 </div>
                 <div>
                   <h4 className="font-semibold text-md text-foreground">1등 당첨자 수</h4>
@@ -230,6 +230,12 @@ export default function LottoHistoryPage() {
       </Card>
 
       <div className="mt-auto pt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+        <Link href="/lotto-recommendation" passHref>
+            <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+                <Ticket className="mr-2 h-4 w-4" />
+                다른 로또 정보
+            </Button>
+        </Link>
         <Link href="/" passHref>
           <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
             <Home className="mr-2 h-4 w-4" />
@@ -247,3 +253,4 @@ export default function LottoHistoryPage() {
   );
 }
 
+    

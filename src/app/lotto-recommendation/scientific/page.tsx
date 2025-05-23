@@ -21,7 +21,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Home, TestTubeDiagonal, BarChart, CheckSquare, XSquare, TrendingUp, Info, ExternalLink, FileText, Sigma, HelpCircle } from 'lucide-react';
+import { Home, TestTubeDiagonal, BarChart, CheckSquare, XSquare, TrendingUp, Info, ExternalLink, FileText, Sigma, HelpCircle, Ticket } from 'lucide-react';
 import { getInitialScientificLottoData, type ProcessedWinningNumber, type CalculatedAverages } from '@/app/lotto-recommendation/scientific/actions';
 import { cn } from '@/lib/utils';
 
@@ -84,8 +84,8 @@ const getLottoBallColorClass = (number: number): string => {
   return 'bg-gray-300 text-black'; 
 };
 
-const LottoBall = ({ number, size = 'medium' }: { number: number, size?: 'small' | 'medium' }) => {
-  const sizeClasses = size === 'small' ? 'h-9 w-9 text-sm' : 'h-10 w-10 text-lg';
+const LottoBall = ({ number, size = 'small' }: { number: number, size?: 'small' | 'medium' }) => {
+  const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-sm';
   return (
     <div className={`flex items-center justify-center rounded-full font-bold shadow-md ${sizeClasses} ${getLottoBallColorClass(number)}`}>
       {number}
@@ -115,7 +115,7 @@ export default function ScientificLottoRecommendationPage() {
     defaultValues: {
       numberOfDrawsForAnalysis: "24",
     },
-     mode: "onChange", // To reflect dynamic error messages from schema
+     mode: "onChange", 
   });
 
   const recommendationForm = useForm<RecommendationFormValues>({
@@ -138,14 +138,13 @@ export default function ScientificLottoRecommendationPage() {
           if (data.recentDraws) setRecentDrawsForDisplay(data.recentDraws);
           if (data.latestDrawNo) {
             setLatestDrawNo(data.latestDrawNo);
-            // Adjust default value if it's now invalid
             const currentDefault = parseInt(analysisForm.getValues("numberOfDrawsForAnalysis"), 10);
             if (data.latestDrawNo < currentDefault && data.latestDrawNo >= 5) {
               analysisForm.setValue("numberOfDrawsForAnalysis", data.latestDrawNo.toString(), { shouldValidate: true });
             } else if (currentDefault < 5){
                analysisForm.setValue("numberOfDrawsForAnalysis", "5", { shouldValidate: true });
             }
-             analysisForm.trigger("numberOfDrawsForAnalysis"); // Re-validate with new latestDrawNo
+             analysisForm.trigger("numberOfDrawsForAnalysis"); 
           }
         }
       } catch (err) {
@@ -157,7 +156,7 @@ export default function ScientificLottoRecommendationPage() {
     }
     loadInitialData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // analysisForm is not stable in deps array if schema changes
+  }, []); 
 
   useEffect(() => {
     if (latestDrawNo !== null) {
@@ -171,8 +170,7 @@ export default function ScientificLottoRecommendationPage() {
            analysisForm.setValue("numberOfDrawsForAnalysis", "5", { shouldValidate: true });
         }
       } else if (currentValStr === "" && analysisForm.formState.isSubmitted) { 
-        // If empty and submitted, let validation handle it
-      } else if (latestDrawNo < 24 && currentValStr === "24"){ // Initial default might be too high
+      } else if (latestDrawNo < 24 && currentValStr === "24"){ 
          analysisForm.setValue("numberOfDrawsForAnalysis", latestDrawNo.toString(), { shouldValidate: true });
       }
       analysisForm.trigger("numberOfDrawsForAnalysis");
@@ -199,7 +197,7 @@ export default function ScientificLottoRecommendationPage() {
         setError(data.error);
       } else {
         if (data.averages) setAnalysisResults(data.averages);
-        if (data.latestDrawNo && !latestDrawNo) setLatestDrawNo(data.latestDrawNo); // Update if not already set
+        if (data.latestDrawNo && !latestDrawNo) setLatestDrawNo(data.latestDrawNo); 
       }
     } catch (err) {
       console.error("과거 데이터 분석 오류:", err);
@@ -259,8 +257,8 @@ export default function ScientificLottoRecommendationPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>회차</TableHead>
-                    <TableHead>추첨일</TableHead>
+                    <TableHead className="whitespace-nowrap">회차</TableHead>
+                    <TableHead className="whitespace-nowrap">추첨일</TableHead>
                     <TableHead>당첨 번호</TableHead>
                     <TableHead>보너스</TableHead>
                   </TableRow>
@@ -459,6 +457,12 @@ export default function ScientificLottoRecommendationPage() {
       )}
 
       <div className="mt-auto pt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+        <Link href="/lotto-recommendation" passHref>
+            <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+                <Ticket className="mr-2 h-4 w-4" />
+                다른 로또 정보
+            </Button>
+        </Link>
         <Link href="/" passHref>
           <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
             <Home className="mr-2 h-4 w-4" />
@@ -476,4 +480,4 @@ export default function ScientificLottoRecommendationPage() {
   );
 }
 
-
+    

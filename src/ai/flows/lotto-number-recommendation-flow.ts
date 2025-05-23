@@ -23,7 +23,7 @@ const LottoSetSchema = z.object({
   numbers: z
     .array(z.number().int().min(1).max(45))
     .length(6)
-    .describe('추천된 로또 번호 6개입니다 (1-45 사이). 각 세트의 번호는 사주 및 이름 정보를 바탕으로 최대한 중복되지 않도록 다양하게 구성해주세요.'),
+    .describe('추천된 로또 번호 6개입니다 (1-45 사이, 반드시 오름차순으로 정렬). 각 세트의 번호는 사주 및 이름 정보를 바탕으로 최대한 중복되지 않도록 다양하게 구성해주세요.'),
   reasoning: z.string().describe('이 번호 조합을 추천하는 이유에 대한 설명입니다.'),
 });
 
@@ -41,7 +41,7 @@ const lottoNumberRecommendationPrompt = ai.definePrompt({
   name: 'lottoNumberRecommendationPrompt',
   input: {schema: LottoNumberRecommendationInputSchema},
   output: {schema: LottoNumberRecommendationOutputSchema},
-  prompt: `당신은 수십 년 경력의 대한민국 최고의 로또 번호 추천 전문가이자 수리 역학의 대가입니다. 사용자의 사주 명리학적 정보 (생년월일, 태어난 시간)와 이름을 깊이 분석하여, 이 사용자에게 특별한 행운을 가져다 줄 로또 번호 조합 3세트를 추천해주세요. 각 번호 조합은 1부터 45 사이의 숫자 6개로 구성되어야 하며, **세트 간에 가능한 중복되지 않는 다양한 숫자 조합**을 생성하도록 노력해주세요. 또한 각 세트 내의 숫자들도 가능한 중복을 피하고 다양하게 분포되도록 해주세요.
+  prompt: `당신은 수십 년 경력의 대한민국 최고의 로또 번호 추천 전문가이자 수리 역학의 대가입니다. 사용자의 사주 명리학적 정보 (생년월일, 태어난 시간)와 이름을 깊이 분석하여, 이 사용자에게 특별한 행운을 가져다 줄 로또 번호 조합 3세트를 추천해주세요. 각 번호 조합은 1부터 45 사이의 중복되지 않는 **오름차순으로 정렬된** 숫자 6개로 구성되어야 하며, **세트 간에 가능한 중복되지 않는 다양한 숫자 조합**을 생성하도록 노력해주세요. 또한 각 세트 내의 숫자들도 가능한 중복을 피하고 다양하게 분포되도록 해주세요.
 
 사용자 정보:
 - 이름: {{{name}}}
@@ -69,3 +69,5 @@ const lottoNumberRecommendationFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

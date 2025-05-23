@@ -22,8 +22,8 @@ const getLottoBallColorClass = (number: number): string => {
   return 'bg-gray-300 text-black';
 };
 
-const LottoBall = ({ number, size = 'medium' }: { number: number, size?: 'small' | 'medium' }) => {
-  const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-lg';
+const LottoBall = ({ number, size = 'small' }: { number: number, size?: 'small' | 'medium' }) => {
+  const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-sm';
   return (
     <div className={`flex items-center justify-center rounded-full font-bold shadow-md ${sizeClasses} ${getLottoBallColorClass(number)}`}>
       {number}
@@ -183,7 +183,7 @@ function SajuLottoResultContent() {
                 최신 ({latestDraw.drwNo}회) 당첨 번호
                 <span className="text-xs text-muted-foreground ml-2">({latestDraw.drwNoDate})</span>
               </h3>
-              <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap gap-y-2">
+              <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap gap-1">
                 <span className="text-sm font-medium text-foreground">당첨번호:</span>
                 {latestDraw.numbers.map((num) => (
                   <LottoBall key={`latest-res-${num}`} number={num} size="small"/>
@@ -202,9 +202,9 @@ function SajuLottoResultContent() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 space-y-3">
-                <div className="flex space-x-2 flex-wrap gap-y-2">
+                <div className="flex flex-wrap gap-1 items-center">
                   {set.numbers.map((num) => (
-                     <LottoBall key={`${index}-${num}`} number={num} />
+                     <LottoBall key={`${index}-${num}`} number={num} size="small" />
                   ))}
                 </div>
                 <p className="text-base text-muted-foreground whitespace-pre-wrap">
@@ -275,3 +275,5 @@ export default function SajuLottoResultPage() {
     </Suspense>
   );
 }
+
+    

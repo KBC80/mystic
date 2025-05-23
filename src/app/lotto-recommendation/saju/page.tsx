@@ -57,8 +57,8 @@ const getLottoBallColorClass = (number: number): string => {
   return 'bg-gray-300 text-black'; 
 };
 
-const LottoBall = ({ number, size = 'medium' }: { number: number, size?: 'small' | 'medium' }) => {
-  const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-lg';
+const LottoBall = ({ number, size = 'small' }: { number: number, size?: 'small' | 'medium' }) => {
+  const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-sm';
   return (
     <div className={`flex items-center justify-center rounded-full font-bold shadow-md ${sizeClasses} ${getLottoBallColorClass(number)}`}>
       {number}
@@ -347,6 +347,12 @@ export default function SajuLottoRecommendationPage() {
       </Card>
 
       <div className="mt-auto pt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+        <Link href="/lotto-recommendation" passHref>
+            <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
+                <Ticket className="mr-2 h-4 w-4" />
+                다른 로또 정보
+            </Button>
+        </Link>
         <Link href="/" passHref>
           <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
             <Home className="mr-2 h-4 w-4" />
@@ -375,3 +381,4 @@ export default function SajuLottoRecommendationPage() {
   );
 }
 
+    
