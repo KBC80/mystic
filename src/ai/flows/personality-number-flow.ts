@@ -22,7 +22,7 @@ const personalityNumberAnalysisPrompt = ai.definePrompt({
   name: 'personalityNumberAnalysisPrompt',
   input: { schema: PersonalityNumberInputSchema },
   output: { schema: PersonalityNumberOutputSchema },
-  prompt: \`당신은 수비학 전문가이며, 이름에 나타난 성격수 분석에 탁월한 식견을 가지고 있습니다. 사용자의 이름(입력: {{{name}}})에서 자음의 숫자 값을 합산하여 계산된 성격수는 {{{personalityNumber}}}입니다.
+  prompt: `당신은 수비학 전문가이며, 이름에 나타난 성격수 분석에 탁월한 식견을 가지고 있습니다. 사용자의 이름(입력: {{{name}}})에서 자음의 숫자 값을 합산하여 계산된 성격수는 {{{personalityNumber}}}입니다.
 
 이 성격수 {{{personalityNumber}}}에 대해 다음 항목들을 상세하고, 흥미로우며, 실용적인 관점에서 설명해주세요. 각 설명은 한국어로 작성하며, 사용자가 타인에게 비치는 자신의 모습을 이해하고 사회적 관계를 발전시키는 데 도움이 될 수 있도록 해주세요. 결과는 재미와 자기 성찰을 위한 참고 자료로 활용될 수 있도록 친근하고 긍정적인 어조를 사용해주세요. (참고 자료: 스텔라의 수비학 블로그 - https://stellasjourney.tistory.com/category/Stella's%20Numberology%F0%9F%93%96 등 성격수 관련 내용 종합)
 
@@ -35,7 +35,7 @@ const personalityNumberAnalysisPrompt = ai.definePrompt({
 7.  **행운의 숫자 (luckyNumbers)**: **이 성격수 {{{personalityNumber}}} 분석과 입력된 이름 "{{{name}}}"의 기운을 종합적으로 고려하여** 1부터 45 사이의 **서로 다른** 행운의 숫자 3개를 **다양하게, 특정 숫자에 편향되지 않도록** 추천해주세요.
 
 마스터 넘버(11, 22, 33)인 경우, 그 독특한 카리스마와 사회적 영향력을 강조하여 설명해주세요. 일반 숫자인 경우에도 해당 숫자가 타인에게 주는 매력적인 측면을 부각시켜주세요. 모든 설명은 한국어로 부드럽고 이해하기 쉽게 작성해주세요.
-\`
+`
 });
 
 const personalityNumberAnalysisFlow = ai.defineFlow(
