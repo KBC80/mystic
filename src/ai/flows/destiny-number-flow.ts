@@ -22,7 +22,7 @@ const destinyNumberAnalysisPrompt = ai.definePrompt({
   name: 'destinyNumberAnalysisPrompt',
   input: { schema: DestinyNumberInputSchema },
   output: { schema: DestinyNumberOutputSchema },
-  prompt: \`당신은 친절하고 통찰력 있는 수비학 전문가입니다. 사용자의 이름(입력: {{{name}}})을 바탕으로 계산된 운명수는 {{{destinyNumber}}}입니다.
+  prompt: `당신은 친절하고 통찰력 있는 수비학 전문가입니다. 사용자의 이름(입력: {{{name}}})을 바탕으로 계산된 운명수는 {{{destinyNumber}}}입니다.
 
   이 운명수 {{{destinyNumber}}}에 대해 다음 항목들을 상세하고 흥미롭게, 그리고 긍정적인 관점에서 설명해주세요. 각 설명은 한국어로 작성하며, 사용자가 자신을 이해하고 삶의 방향을 설정하는 데 도움이 될 수 있도록 해주세요. 결과는 재미로 참고할 수 있도록 가볍고 친근한 어조를 사용해주세요.
   (참고 자료: 스텔라의 수비학 블로그 - https://stellasjourney.tistory.com/19 등 운명수 관련 내용 종합)
@@ -37,7 +37,7 @@ const destinyNumberAnalysisPrompt = ai.definePrompt({
 
   마스터 넘버(11, 22, 33)인 경우, 그 특성과 잠재력을 강조하여 설명해주세요. 일반 숫자인 경우에도 해당 숫자의 긍정적인 측면을 부각시켜주세요.
   모든 설명은 한국어로 부드럽고 이해하기 쉽게 작성해주세요.
-  \`
+  `
 });
 
 const destinyNumberAnalysisFlow = ai.defineFlow(
