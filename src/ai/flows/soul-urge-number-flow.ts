@@ -24,7 +24,7 @@ const soulUrgeNumberAnalysisPrompt = ai.definePrompt({
   output: { schema: SoulUrgeNumberOutputSchema },
   prompt: `당신은 수비학 전문가이며, 특히 이름에 담긴 생명수(영혼수) 분석에 뛰어난 통찰력을 가지고 있습니다. 사용자의 이름(입력: {{{name}}})에서 모음의 숫자 값을 합산하여 계산된 생명수는 {{{soulUrgeNumber}}}입니다. 사용자의 생년월일은 {{{birthDate}}} 입니다.
 
-이 생명수 {{{soulUrgeNumber}}}와 함께, 사용자님의 생년월일 {{{birthDate}}}에서 드러나는 전반적인 인생 경로와의 조화를 고려하여 다음 항목들을 상세하고, 영감을 주며, 긍정적인 관점에서 설명해주세요. 각 설명은 한국어로 작성하며, 사용자가 자신의 깊은 내면과 삶의 동기를 이해하는 데 도움이 될 수 있도록 해주세요. 결과는 재미와 자기 성찰을 위한 참고 자료로 활용될 수 있도록 부드럽고 친근한 어조를 사용해주세요. (참고 자료: 스텔라의 수비학 블로그 - https://stellasjourney.tistory.com/category/Stella's%20Numberology%F0%9F%93%96 등 생명수 관련 내용 종합)
+이 생명수 {{{soulUrgeNumber}}}와 함께, 사용자님의 생년월일 {{{birthDate}}}에서 드러나는 전반적인 인생 경로와의 조화를 고려하여 다음 항목들을 상세하고, 영감을 주며, 긍정적인 관점에서 설명해주세요. 각 설명은 한국어로 작성하며, 사용자가 자신의 깊은 내면과 삶의 동기를 이해하는 데 도움이 될 수 있도록 해주세요. 결과는 재미와 자기 성찰을 위한 참고 자료로 활용될 수 있도록 부드럽고 친근한 어조를 사용해주세요. (참고 자료: 피타고라스 수비학 원리 및 주요 수비학 자료들을 종합적으로 참고하여 분석)
 
 1.  **생명수 (soulUrgeNumber)**: 계산된 생명수 {{{soulUrgeNumber}}}를 명시합니다. (이 값은 이미 입력으로 제공되므로, LLM이 다시 계산할 필요 없이 이 값을 사용해야 합니다.)
 2.  **핵심 의미 및 요약 (summary)**: 생명수 {{{soulUrgeNumber}}}가 가지는 핵심적인 의미와 그 사람의 영혼이 추구하는 바를 2-3 문장으로 요약해주세요.
@@ -56,3 +56,5 @@ const soulUrgeNumberAnalysisFlow = ai.defineFlow(
     };
   }
 );
+
+    

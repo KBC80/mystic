@@ -24,7 +24,7 @@ const personalityNumberAnalysisPrompt = ai.definePrompt({
   output: { schema: PersonalityNumberOutputSchema },
   prompt: `당신은 수비학 전문가이며, 이름에 나타난 성격수 분석에 탁월한 식견을 가지고 있습니다. 사용자의 이름(입력: {{{name}}})에서 자음의 숫자 값을 합산하여 계산된 성격수는 {{{personalityNumber}}}입니다. 사용자의 생년월일은 {{{birthDate}}} 입니다.
 
-이 성격수 {{{personalityNumber}}}와 함께, 사용자님의 생년월일 {{{birthDate}}}에서 나타나는 타고난 기질과의 상호작용을 고려하여 다음 항목들을 상세하고, 흥미로우며, 실용적인 관점에서 설명해주세요. 각 설명은 한국어로 작성하며, 사용자가 타인에게 비치는 자신의 모습을 이해하고 사회적 관계를 발전시키는 데 도움이 될 수 있도록 해주세요. 결과는 재미와 자기 성찰을 위한 참고 자료로 활용될 수 있도록 친근하고 긍정적인 어조를 사용해주세요. (참고 자료: 스텔라의 수비학 블로그 - https://stellasjourney.tistory.com/category/Stella's%20Numberology%F0%9F%93%96 등 성격수 관련 내용 종합)
+이 성격수 {{{personalityNumber}}}와 함께, 사용자님의 생년월일 {{{birthDate}}}에서 나타나는 타고난 기질과의 상호작용을 고려하여 다음 항목들을 상세하고, 흥미로우며, 실용적인 관점에서 설명해주세요. 각 설명은 한국어로 작성하며, 사용자가 타인에게 비치는 자신의 모습을 이해하고 사회적 관계를 발전시키는 데 도움이 될 수 있도록 해주세요. 결과는 재미와 자기 성찰을 위한 참고 자료로 활용될 수 있도록 친근하고 긍정적인 어조를 사용해주세요. (참고 자료: 피타고라스 수비학 원리 및 주요 수비학 자료들을 종합적으로 참고하여 분석)
 
 1.  **성격수 (personalityNumber)**: 계산된 성격수 {{{personalityNumber}}}를 명시합니다. (이 값은 이미 입력으로 제공되므로, LLM이 다시 계산할 필요 없이 이 값을 사용해야 합니다.)
 2.  **핵심 의미 및 요약 (summary)**: 성격수 {{{personalityNumber}}}가 나타내는 타인에게 비치는 주요 인상과 전반적인 외적 성향을 2-3 문장으로 요약해주세요.
@@ -56,3 +56,5 @@ const personalityNumberAnalysisFlow = ai.defineFlow(
     };
   }
 );
+
+    
