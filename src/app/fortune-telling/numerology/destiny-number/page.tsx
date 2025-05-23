@@ -15,9 +15,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription, // FormDescription 추가
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // CardDescription 제거 (사용하지 않음)
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Star, Home, Sigma, Wand2, Sparkles } from 'lucide-react';
 import { HanjaSelectionModal } from '@/components/hanja-selection-modal';
@@ -114,9 +115,10 @@ export default function DestinyNumberPage() {
           <CardTitle className="text-2xl flex items-center gap-2">
             <Star className="text-primary h-6 w-6" /> 운명수 풀이
           </CardTitle>
-          <CardDescription className="break-words">
+          {/* CardDescription이 사용되지 않아 제거함 */}
+          <p className="text-sm text-muted-foreground break-words">
             당신의 이름에 담긴 운명수를 통해 타고난 성향, 잠재력, 삶의 방향을 알아보세요.
-          </CardDescription>
+          </p>
         </CardHeader>
         <CardContent>
           <Form {...form}>
