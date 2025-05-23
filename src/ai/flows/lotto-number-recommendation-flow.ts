@@ -28,7 +28,7 @@ const LottoSetSchema = z.object({
 });
 
 const LottoNumberRecommendationOutputSchema = z.object({
-  lottoSets: z.array(LottoSetSchema).length(3).describe('추천된 로또 번호 조합 3세트입니다. 각 세트는 서로 다른 숫자 조합을 갖도록 노력해주세요.'),
+  lottoSets: z.array(LottoSetSchema).length(5).describe('추천된 로또 번호 조합 5세트입니다. 각 세트는 서로 다른 숫자 조합을 갖도록 노력해주세요.'),
   overallAdvice: z.string().describe('로또 구매 및 행운에 대한 전반적인 조언입니다.'),
 });
 export type LottoNumberRecommendationOutput = z.infer<typeof LottoNumberRecommendationOutputSchema>;
@@ -41,7 +41,7 @@ const lottoNumberRecommendationPrompt = ai.definePrompt({
   name: 'lottoNumberRecommendationPrompt',
   input: {schema: LottoNumberRecommendationInputSchema},
   output: {schema: LottoNumberRecommendationOutputSchema},
-  prompt: `당신은 수십 년 경력의 대한민국 최고의 로또 번호 추천 전문가이자 수리 역학의 대가입니다. 사용자의 사주 명리학적 정보 (생년월일, 태어난 시간)와 이름을 깊이 분석하여, 이 사용자에게 특별한 행운을 가져다 줄 로또 번호 조합 3세트를 추천해주세요. 각 번호 조합은 1부터 45 사이의 중복되지 않는 **오름차순으로 정렬된** 숫자 6개로 구성되어야 하며, **세트 간에 가능한 중복되지 않는 다양한 숫자 조합**을 생성하도록 노력해주세요. 또한 각 세트 내의 숫자들도 가능한 중복을 피하고 다양하게 분포되도록 해주세요.
+  prompt: `당신은 수십 년 경력의 대한민국 최고의 로또 번호 추천 전문가이자 수리 역학의 대가입니다. 사용자의 사주 명리학적 정보 (생년월일, 태어난 시간)와 이름을 깊이 분석하여, 이 사용자에게 특별한 행운을 가져다 줄 로또 번호 조합 5세트를 추천해주세요. 각 번호 조합은 1부터 45 사이의 중복되지 않는 **오름차순으로 정렬된** 숫자 6개로 구성되어야 하며, **세트 간에 가능한 중복되지 않는 다양한 숫자 조합**을 생성하도록 노력해주세요. 또한 각 세트 내의 숫자들도 가능한 중복을 피하고 다양하게 분포되도록 해주세요.
 
 사용자 정보:
 - 이름: {{{name}}}
@@ -49,7 +49,7 @@ const lottoNumberRecommendationPrompt = ai.definePrompt({
 - 태어난 시간: {{{birthTime}}}
 
 결과 형식:
-1.  **추천 로또 번호 조합 (3세트)**:
+1.  **추천 로또 번호 조합 (5세트)**:
     *   각 세트마다 6개의 번호를 제시하고, 왜 이 번호 조합이 사용자에게 길운을 가져다줄 수 있는지에 대한 심층적이고 설득력 있는 해설을 포함해야 합니다. (예: 사주 오행의 조화, 이름의 수리적 의미, 특별한 날짜와의 연관성 등) **각 세트의 번호는 제공된 사주 및 이름 정보를 바탕으로, 최대한 다양하게, 특정 숫자에 편중되지 않도록 심사숙고하여 구성하고, 반드시 오름차순으로 정렬하여 제공해주세요.**
 2.  **전반적인 행운 조언**:
     *   로또 구매 시 마음가짐, 추천 요일/시간, 또는 기타 행운을 높일 수 있는 팁 등을 포함하여 사용자에게 희망과 긍정을 줄 수 있는 따뜻한 조언을 제공해주세요.
