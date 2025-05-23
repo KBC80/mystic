@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Home, Brain, Sigma, Sparkles, Star } from 'lucide-react';
+import { Home, Brain, Sigma, Sparkles, Star, Heart, UserCircle } from 'lucide-react';
 
 export default function NumerologyLandingPage() {
   const numerologyTypes = [
@@ -20,7 +20,18 @@ export default function NumerologyLandingPage() {
       icon: Star, 
       description: "당신의 이름에 담긴 운명수를 통해 타고난 성향, 잠재력, 삶의 방향을 알아보세요."
     },
-    // Future numerology services can be added here
+    {
+      title: "생명수(영혼수) 풀이",
+      href: "/fortune-telling/numerology/soul-urge-number",
+      icon: Heart,
+      description: "이름의 모음을 통해 당신의 깊은 내면의 욕망과 영혼의 목소리를 탐색해보세요."
+    },
+    {
+      title: "성격수 풀이",
+      href: "/fortune-telling/numerology/personality-number",
+      icon: UserCircle,
+      description: "이름의 자음을 통해 타인에게 비치는 당신의 외적인 모습과 첫인상을 알아보세요."
+    },
   ];
 
   return (
@@ -31,10 +42,10 @@ export default function NumerologyLandingPage() {
             <Sigma className="text-primary h-6 w-6" /> 수비학 운세
           </CardTitle>
           <CardDescription className="break-words">
-            숫자의 신비로운 힘을 통해 당신의 삶에 대한 통찰을 얻어보세요.
+            숫자의 신비로운 힘을 통해 당신의 삶에 대한 통찰을 얻어보세요. 이름과 생년월일에 숨겨진 다양한 숫자들의 의미를 풀이합니다.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {numerologyTypes.map((type) => (
             <Link href={type.href} key={type.href} className="block group">
               <Card className="h-full flex flex-col shadow-md group-hover:shadow-xl group-hover:scale-[1.02] transition-all duration-300 ease-in-out cursor-pointer">

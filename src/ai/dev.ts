@@ -16,3 +16,5 @@ import '@/ai/flows/relationship-compatibility-flow.ts'; // Added relationship co
 import '@/ai/flows/mbti-compatibility-flow.ts'; // Added MBTI compatibility flow
 import '@/ai/flows/life-path-number-flow.ts'; // Added Life Path Number flow
 import '@/ai/flows/destiny-number-flow.ts'; // Added Destiny Number flow
+import '@/ai/flows/soul-urge-number-flow.ts'; // Added Soul Urge Number flow
+import '@/ai/flows/personality-number-flow.ts'; // Added Personality Number flow

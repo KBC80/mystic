@@ -80,12 +80,11 @@ function reduceNumber(num: number): number {
 }
 
 /**
- * 한글 이름으로 운명수를 계산합니다.
+ * 한글 이름으로 운명수를 계산합니다. (자음 + 모음)
  * @param name 한글 이름 (예: "홍길동")
  * @returns 계산된 운명수
  */
 export function calculateDestinyNumber(name: string): number {
-  // 이름에서 한글만 추출 (괄호 안 한자는 무시)
   const koreanOnlyName = name.replace(/\s*\(.*\)\s*$/, "").trim();
   let totalValue = 0;
 
@@ -99,21 +98,21 @@ export function calculateDestinyNumber(name: string): number {
 }
 
 /**
- * 한글 이름으로 영혼수를 계산합니다.
+ * 한글 이름으로 영혼수(생명수)를 계산합니다. (모음)
  * @param name 한글 이름 (예: "홍길동")
  * @returns 계산된 영혼수
  */
 export function calculateSoulUrgeNumber(name: string): number {
   const koreanOnlyName = name.replace(/\s*\(.*\)\s*$/, "").trim();
   let totalValue = 0;
-  const vowels = "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ";
+  const vowels = "ㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣㅐㅒㅔㅖㅘㅙㅚㅝㅞㅟㅢ"; // 모든 모음 문자열
 
   for (const char of koreanOnlyName) {
     const jamos = getJamo(char);
     // 중성(모음)만 고려
     if (jamos.length >= 2) {
       const jung = jamos[1]; // 중성
-      if (vowels.includes(jung)) {
+      if (vowels.includes(jung)) { // jung이 모음인지 확인
         totalValue += KOREAN_LETTER_VALUES[jung] || 0;
       }
     }
@@ -122,26 +121,26 @@ export function calculateSoulUrgeNumber(name: string): number {
 }
 
 /**
- * 한글 이름으로 성격수를 계산합니다.
+ * 한글 이름으로 성격수를 계산합니다. (자음)
  * @param name 한글 이름 (예: "홍길동")
  * @returns 계산된 성격수
  */
 export function calculatePersonalityNumber(name: string): number {
   const koreanOnlyName = name.replace(/\s*\(.*\)\s*$/, "").trim();
   let totalValue = 0;
-  const consonants = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+  const consonants = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ"; // 모든 자음 문자열 (종성 포함 가능)
 
   for (const char of koreanOnlyName) {
     const jamos = getJamo(char);
     // 초성(자음) 고려
     const cho = jamos[0];
-    if (consonants.includes(cho)) {
+    if (consonants.includes(cho)) { // cho가 자음인지 확인
       totalValue += KOREAN_LETTER_VALUES[cho] || 0;
     }
     // 종성(자음) 고려
     if (jamos.length === 3) {
       const jong = jamos[2];
-      if (consonants.includes(jong)) {
+      if (consonants.includes(jong)) { // jong이 자음인지 확인
         totalValue += KOREAN_LETTER_VALUES[jong] || 0;
       }
     }
