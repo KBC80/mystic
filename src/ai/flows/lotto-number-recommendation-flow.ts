@@ -50,7 +50,7 @@ const lottoNumberRecommendationPrompt = ai.definePrompt({
 
 결과 형식:
 1.  **추천 로또 번호 조합 (3세트)**:
-    *   각 세트마다 6개의 번호를 제시하고, 왜 이 번호 조합이 사용자에게 길운을 가져다줄 수 있는지에 대한 심층적이고 설득력 있는 해설을 포함해야 합니다. (예: 사주 오행의 조화, 이름의 수리적 의미, 특별한 날짜와의 연관성 등) **각 세트의 번호는 제공된 사주 및 이름 정보를 바탕으로, 최대한 다양하게, 특정 숫자에 편중되지 않도록 심사숙고하여 구성해주세요.**
+    *   각 세트마다 6개의 번호를 제시하고, 왜 이 번호 조합이 사용자에게 길운을 가져다줄 수 있는지에 대한 심층적이고 설득력 있는 해설을 포함해야 합니다. (예: 사주 오행의 조화, 이름의 수리적 의미, 특별한 날짜와의 연관성 등) **각 세트의 번호는 제공된 사주 및 이름 정보를 바탕으로, 최대한 다양하게, 특정 숫자에 편중되지 않도록 심사숙고하여 구성하고, 반드시 오름차순으로 정렬하여 제공해주세요.**
 2.  **전반적인 행운 조언**:
     *   로또 구매 시 마음가짐, 추천 요일/시간, 또는 기타 행운을 높일 수 있는 팁 등을 포함하여 사용자에게 희망과 긍정을 줄 수 있는 따뜻한 조언을 제공해주세요.
 
@@ -66,8 +66,12 @@ const lottoNumberRecommendationFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await lottoNumberRecommendationPrompt(input);
+    if (output && output.lottoSets) {
+      output.lottoSets.forEach(set => {
+        set.numbers.sort((a, b) => a - b);
+      });
+    }
     return output!;
   }
 );
-
     

@@ -54,17 +54,33 @@ const getLottoBallColorClass = (number: number): string => {
   if (number >= 21 && number <= 30) return 'bg-red-500 text-white';
   if (number >= 31 && number <= 40) return 'bg-gray-600 text-white';
   if (number >= 41 && number <= 45) return 'bg-green-500 text-white';
-  return 'bg-gray-300 text-black'; 
+  return 'bg-gray-300 text-black';
 };
 
 const LottoBall = ({ number, size = 'small' }: { number: number, size?: 'small' | 'medium' }) => {
   const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-sm';
   return (
-    <div className={`flex items-center justify-center rounded-full font-bold shadow-md ${sizeClasses} ${getLottoBallColorClass(number)}`}>
+    <div className={cn(
+      "flex items-center justify-center rounded-full font-bold shadow-md",
+      sizeClasses,
+      getLottoBallColorClass(number)
+    )}>
       {number}
     </div>
   );
 };
+
+const LottoNumberList = ({ numbers, bonusNumber }: { numbers: number[], bonusNumber?: number }) => (
+  <div className="flex flex-wrap gap-1 items-center">
+    {numbers.map(num => <LottoBall key={num} number={num} size="small" />)}
+    {bonusNumber && (
+      <>
+        <span className="mx-1 text-muted-foreground">+</span>
+        <LottoBall number={bonusNumber} size="small" />
+      </>
+    )}
+  </div>
+);
 
 export default function SajuLottoRecommendationPage() {
   const router = useRouter();
@@ -146,10 +162,10 @@ export default function SajuLottoRecommendationPage() {
           hanjaPart += selections[i]!.hanja;
           someConverted = true;
         } else {
-          allConverted = false; 
+          allConverted = false;
         }
       }
-      
+
       if (someConverted && !allConverted) {
           toast({
               title: "알림",
@@ -158,7 +174,7 @@ export default function SajuLottoRecommendationPage() {
           });
       } else if (allConverted && hanjaPart.length === syllables.length) {
           form.setValue(targetFieldNameForHanja, `${koreanOnlyName} (${hanjaPart})`, { shouldValidate: true });
-      } else { 
+      } else {
           form.setValue(targetFieldNameForHanja, koreanOnlyName, { shouldValidate: true });
       }
       setIsHanjaModalOpen(false);
@@ -174,7 +190,7 @@ export default function SajuLottoRecommendationPage() {
       calendarType: values.calendarType,
       birthTime: values.birthTime,
     }).toString();
-    
+
     router.push(`/lotto-recommendation/saju/result?${queryParams}`);
   }
 
@@ -210,14 +226,7 @@ export default function SajuLottoRecommendationPage() {
                 최신 ({latestDraw.drwNo}회) 당첨 번호
                 <span className="text-xs text-muted-foreground ml-2">({latestDraw.drwNoDate})</span>
               </h3>
-              <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap gap-y-2">
-                <span className="text-sm font-medium text-foreground">당첨번호:</span>
-                {latestDraw.numbers.map((num) => (
-                  <LottoBall key={`latest-${num}`} number={num} size="small"/>
-                ))}
-                <span className="text-sm font-medium text-foreground ml-1 sm:ml-2">+ 보너스:</span>
-                <LottoBall number={latestDraw.bnusNo} size="small"/>
-              </div>
+              <LottoNumberList numbers={latestDraw.numbers} bonusNumber={latestDraw.bnusNo} />
             </div>
           )}
 
@@ -380,5 +389,4 @@ export default function SajuLottoRecommendationPage() {
     </div>
   );
 }
-
     

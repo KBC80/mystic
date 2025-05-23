@@ -12,6 +12,7 @@ import { recommendLottoNumbers, type LottoNumberRecommendationInput, type LottoN
 import html2canvas from 'html2canvas';
 import { getLatestLottoDraw, type LatestWinningNumber } from '@/app/lotto-recommendation/saju/actions';
 import { Ticket, Home, Sparkles, MessageSquare, Hash, ExternalLink, RotateCcw, Newspaper, AlertTriangle, Share } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const getLottoBallColorClass = (number: number): string => {
   if (number >= 1 && number <= 10) return 'bg-yellow-400 text-black';
@@ -25,11 +26,21 @@ const getLottoBallColorClass = (number: number): string => {
 const LottoBall = ({ number, size = 'small' }: { number: number, size?: 'small' | 'medium' }) => {
   const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-sm';
   return (
-    <div className={`flex items-center justify-center rounded-full font-bold shadow-md ${sizeClasses} ${getLottoBallColorClass(number)}`}>
+    <div className={cn(
+      "flex items-center justify-center rounded-full font-bold shadow-md",
+      sizeClasses,
+      getLottoBallColorClass(number)
+    )}>
       {number}
     </div>
   );
 };
+
+const LottoNumberList = ({ numbers }: { numbers: number[] }) => (
+  <div className="flex flex-wrap gap-1 items-center">
+    {numbers.map(num => <LottoBall key={num} number={num} size="small" />)}
+  </div>
+);
 
 function SajuLottoResultContent() {
   const searchParams = useSearchParams();
@@ -56,7 +67,7 @@ function SajuLottoResultContent() {
       setIsLoadingLatestDraw(false);
       return;
     }
-    
+
     setInputName(name);
 
     const input: LottoNumberRecommendationInput = {
@@ -156,7 +167,7 @@ function SajuLottoResultContent() {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-8 py-8 flex flex-col flex-1">
       <Card className="shadow-lg" ref={resultAreaRef}>
@@ -183,7 +194,7 @@ function SajuLottoResultContent() {
                 최신 ({latestDraw.drwNo}회) 당첨 번호
                 <span className="text-xs text-muted-foreground ml-2">({latestDraw.drwNoDate})</span>
               </h3>
-              <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 items-center">
                 <span className="text-sm font-medium text-foreground">당첨번호:</span>
                 {latestDraw.numbers.map((num) => (
                   <LottoBall key={`latest-res-${num}`} number={num} size="small"/>
@@ -202,18 +213,14 @@ function SajuLottoResultContent() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 space-y-3">
-                <div className="flex flex-wrap gap-1 items-center">
-                  {set.numbers.map((num) => (
-                     <LottoBall key={`${index}-${num}`} number={num} size="small" />
-                  ))}
-                </div>
+                <LottoNumberList numbers={set.numbers} />
                 <p className="text-base text-muted-foreground whitespace-pre-wrap">
                   <strong className="text-secondary-foreground">AI 해설:</strong> {set.reasoning}
                 </p>
               </CardContent>
             </Card>
           ))}
-            
+
           <div className="pt-6 border-t">
             <h3 className="text-2xl font-semibold flex items-center gap-2 text-secondary-foreground mb-2">
               <MessageSquare className="h-6 w-6"/> AI의 전반적인 행운 조언
@@ -221,7 +228,7 @@ function SajuLottoResultContent() {
             <p className="text-muted-foreground whitespace-pre-wrap text-base leading-relaxed">{result.overallAdvice}</p>
           </div>
         </CardContent>
-         <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
+         <CardFooter className="pt-8 border-t">
            <Button
              onClick={handleSaveAsImage}
              disabled={isSavingImage}
@@ -275,5 +282,4 @@ export default function SajuLottoResultPage() {
     </Suspense>
   );
 }
-
     

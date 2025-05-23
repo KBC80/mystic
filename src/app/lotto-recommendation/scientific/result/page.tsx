@@ -6,14 +6,14 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { ScientificLottoRecommendationOutput } from '@/ai/flows/scientific-lotto-recommendation-flow';
 import { getLottoRecommendationsAction } from '@/app/lotto-recommendation/scientific/actions';
-import { getLatestLottoDraw, type LatestWinningNumber } from '@/app/lotto-recommendation/saju/actions'; 
+import { getLatestLottoDraw, type LatestWinningNumber } from '@/app/lotto-recommendation/saju/actions';
 import html2canvas from 'html2canvas';
-import { Home, TestTubeDiagonal, Sparkles, Hash, FileText, ExternalLink, RotateCcw, Newspaper, AlertTriangle, Info, Share } from 'lucide-react';
+import { Home, TestTubeDiagonal, Sparkles, Hash, FileText, ExternalLink, RotateCcw, Newspaper, AlertTriangle, Info, Share, ListChecks, TrendingUp, TrendingDown, EyeOff, Sigma } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const getLottoBallColorClass = (number: number): string => {
   if (number >= 1 && number <= 10) return 'bg-yellow-400 text-black';
@@ -25,13 +25,30 @@ const getLottoBallColorClass = (number: number): string => {
 };
 
 const LottoBall = ({ number, size = 'small' }: { number: number, size?: 'small' | 'medium' }) => {
-  const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-sm'; 
+  const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-sm';
   return (
-    <div className={`flex items-center justify-center rounded-full font-bold shadow-md ${sizeClasses} ${getLottoBallColorClass(number)}`}>
+    <div className={cn(
+      "flex items-center justify-center rounded-full font-bold shadow-md",
+      sizeClasses,
+      getLottoBallColorClass(number)
+    )}>
       {number}
     </div>
   );
 };
+
+const LottoNumberList = ({ numbers, bonusNumber }: { numbers: number[], bonusNumber?: number }) => (
+  <div className="flex flex-wrap gap-1 items-center">
+    {numbers.map(num => <LottoBall key={num} number={num} size="small" />)}
+    {bonusNumber && (
+      <>
+        <span className="mx-1 text-muted-foreground">+</span>
+        <LottoBall number={bonusNumber} size="small" />
+      </>
+    )}
+  </div>
+);
+
 
 interface AnalysisDataForUI {
   analyzedDrawsCount: number;
@@ -42,6 +59,35 @@ interface AnalysisDataForUI {
   notAppearedNumbers: number[];
 }
 
+const StatItem = ({ title, value, icon: Icon }: { title: string, value: string | number, icon?: React.ElementType }) => (
+  <div className="flex items-start gap-2 p-3 bg-background rounded-md shadow-sm">
+    {Icon && <Icon className="h-5 w-5 text-primary mt-0.5" />}
+    <div>
+      <p className="text-sm font-semibold text-secondary-foreground break-words">{title}</p>
+      <p className="text-sm text-muted-foreground break-words">{value}</p>
+    </div>
+  </div>
+);
+
+const NumberStatList = ({ title, items, icon: Icon }: { title: string, items: { num: number, count: number }[] | number[], icon?: React.ElementType }) => (
+  <div>
+    <h4 className="text-md font-semibold text-secondary-foreground mb-2 flex items-center gap-1">
+      {Icon && <Icon className="h-4 w-4" />} {title}
+    </h4>
+    {items.length > 0 ? (
+      <div className="flex flex-wrap gap-2">
+        {(items as any[]).map((item, index) => (
+          <span key={index} className="text-sm bg-muted px-2 py-1 rounded-md text-muted-foreground shadow-sm">
+            {typeof item === 'number' ? item : `${item.num} (${item.count}회)`}
+          </span>
+        ))}
+      </div>
+    ) : (
+      <p className="text-sm text-muted-foreground">데이터 없음</p>
+    )}
+  </div>
+);
+
 function ScientificLottoResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -50,7 +96,7 @@ function ScientificLottoResultContent() {
   const [isSavingImage, setIsSavingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [llmResult, setLlmResult] = useState<ScientificLottoRecommendationOutput | null>(null);
-  
+
   const [includeNumbersStr, setIncludeNumbersStr] = useState<string>("");
   const [excludeNumbersStr, setExcludeNumbersStr] = useState<string>("");
   const [analysisDataForUI, setAnalysisDataForUI] = useState<AnalysisDataForUI | null>(null);
@@ -63,14 +109,14 @@ function ScientificLottoResultContent() {
     const includeParam = searchParams.get('includeNumbers');
     const excludeParam = searchParams.get('excludeNumbers');
     const numDrawsParam = searchParams.get('numberOfDrawsForAnalysis');
-    
+
     if (!numDrawsParam) {
         setError("분석할 회차 수 정보가 누락되었습니다.");
         setIsLoading(false);
         setIsLoadingLatestDraw(false);
         return;
     }
-    
+
     setIncludeNumbersStr(includeParam || "없음");
     setExcludeNumbersStr(excludeParam || "없음");
 
@@ -109,7 +155,7 @@ function ScientificLottoResultContent() {
       .finally(() => {
         setIsLoadingLatestDraw(false);
       });
-    
+
     Promise.all([fetchRecommendation, fetchLatestLotto]).finally(() => {
       setIsLoading(false);
     });
@@ -175,7 +221,7 @@ function ScientificLottoResultContent() {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-8 py-8 flex flex-col flex-1">
       <Card className="shadow-lg" ref={resultAreaRef}>
@@ -212,80 +258,33 @@ function ScientificLottoResultContent() {
                 최신 ({latestDraw.drwNo}회) 당첨 번호
                 <span className="text-xs text-muted-foreground ml-2">({latestDraw.drwNoDate})</span>
               </h3>
-              <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap gap-1">
-                <span className="text-sm font-medium text-foreground">당첨번호:</span>
-                {latestDraw.numbers.map((num) => (
-                  <LottoBall key={`latest-sci-res-${num}`} number={num} size="small"/>
-                ))}
-                <span className="text-sm font-medium text-foreground ml-1 sm:ml-2">+ 보너스:</span>
-                <LottoBall number={latestDraw.bnusNo} size="small"/>
-              </div>
+              <LottoNumberList numbers={latestDraw.numbers} bonusNumber={latestDraw.bnusNo} />
             </div>
           )}
 
           {analysisDataForUI && (
-            <Card className="p-6 bg-secondary/30 shadow-md">
+            <Card className="p-6 bg-card shadow-md">
                 <CardHeader className="p-0 pb-3">
-                    <CardTitle className="text-xl text-secondary-foreground flex items-center gap-2">
+                    <CardTitle className="text-xl text-primary flex items-center gap-2">
                         <FileText className="h-5 w-5" /> 과거 데이터 분석 (최근 {analysisDataForUI.analyzedDrawsCount}회차 기준)
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="p-0 space-y-3">
-                  <p className="text-muted-foreground break-words">예상 당첨 번호 합계 범위: <strong>{llmResult.predictedSumRange}</strong> (과거 평균: {analysisDataForUI.averageSum.toFixed(1)})</p>
-                  <p className="text-muted-foreground break-words">예상 짝수:홀수 비율: <strong>{llmResult.predictedEvenOddRatio}</strong> (과거 가장 흔한 비율: {analysisDataForUI.averageEvenOddRatio})</p>
-                  
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[150px] whitespace-nowrap">구분</TableHead>
-                          {Array.from({ length: Math.max(analysisDataForUI.frequentNumbers.length, analysisDataForUI.leastFrequentNumbers.length, 1) }).map((_, index) => (
-                            <TableHead key={`header-num-${index}`} className="text-center whitespace-nowrap">번호 {index + 1}</TableHead>
-                          ))}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {analysisDataForUI.frequentNumbers.length > 0 && (
-                          <>
-                            <TableRow>
-                              <TableCell rowSpan={2} className="font-semibold align-middle text-foreground whitespace-nowrap">자주 당첨된 번호</TableCell>
-                              {analysisDataForUI.frequentNumbers.map(item => (
-                                <TableCell key={`freq-num-${item.num}`} className="text-center font-medium text-foreground whitespace-nowrap">{item.num}</TableCell>
-                              ))}
-                              {Array.from({ length: Math.max(0, Math.max(analysisDataForUI.frequentNumbers.length, analysisDataForUI.leastFrequentNumbers.length) - analysisDataForUI.frequentNumbers.length) }).map((_, i) => <TableCell key={`freq-empty-pad-${i}`} />)}
-                            </TableRow>
-                            <TableRow>
-                              {analysisDataForUI.frequentNumbers.map(item => (
-                                <TableCell key={`freq-count-${item.num}`} className="text-center text-xs text-muted-foreground whitespace-nowrap">({item.count}회)</TableCell>
-                              ))}
-                              {Array.from({ length: Math.max(0, Math.max(analysisDataForUI.frequentNumbers.length, analysisDataForUI.leastFrequentNumbers.length) - analysisDataForUI.frequentNumbers.length) }).map((_, i) => <TableCell key={`freq-empty-count-pad-${i}`} />)}
-                            </TableRow>
-                          </>
-                        )}
-                        {analysisDataForUI.leastFrequentNumbers.length > 0 && (
-                           <>
-                            <TableRow>
-                              <TableCell rowSpan={2} className="font-semibold align-middle text-foreground whitespace-nowrap">가장 적게 당첨된 번호</TableCell>
-                              {analysisDataForUI.leastFrequentNumbers.map(item => (
-                                <TableCell key={`least-num-${item.num}`} className="text-center font-medium text-foreground whitespace-nowrap">{item.num}</TableCell>
-                              ))}
-                               {Array.from({ length: Math.max(0, Math.max(analysisDataForUI.frequentNumbers.length, analysisDataForUI.leastFrequentNumbers.length) - analysisDataForUI.leastFrequentNumbers.length) }).map((_, i) => <TableCell key={`least-empty-pad-${i}`} />)}
-                            </TableRow>
-                            <TableRow>
-                              {analysisDataForUI.leastFrequentNumbers.map(item => (
-                                <TableCell key={`least-count-${item.num}`} className="text-center text-xs text-muted-foreground whitespace-nowrap">({item.count}회)</TableCell>
-                              ))}
-                              {Array.from({ length: Math.max(0, Math.max(analysisDataForUI.frequentNumbers.length, analysisDataForUI.leastFrequentNumbers.length) - analysisDataForUI.leastFrequentNumbers.length) }).map((_, i) => <TableCell key={`least-empty-count-pad-${i}`} />)}
-                            </TableRow>
-                          </>
-                        )}
-                      </TableBody>
-                    </Table>
+                <CardContent className="p-0 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <StatItem title="예상 당첨 번호 합계 범위" value={llmResult.predictedSumRange} icon={Sigma} />
+                    <StatItem title="예상 짝수:홀수 비율" value={llmResult.predictedEvenOddRatio} icon={ListChecks} />
                   </div>
-
-                  {analysisDataForUI.notAppearedNumbers && analysisDataForUI.notAppearedNumbers.length > 0 && (
-                    <p className="text-sm text-muted-foreground break-words">최근 {analysisDataForUI.analyzedDrawsCount}회 동안 미출현한 주요 숫자: <strong>{analysisDataForUI.notAppearedNumbers.join(', ')}</strong></p>
-                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+                    {analysisDataForUI.frequentNumbers && analysisDataForUI.frequentNumbers.length > 0 && (
+                        <NumberStatList title="자주 당첨된 번호" items={analysisDataForUI.frequentNumbers} icon={TrendingUp} />
+                    )}
+                    {analysisDataForUI.leastFrequentNumbers && analysisDataForUI.leastFrequentNumbers.length > 0 && (
+                        <NumberStatList title="가장 적게 당첨된 번호" items={analysisDataForUI.leastFrequentNumbers} icon={TrendingDown}/>
+                    )}
+                    {analysisDataForUI.notAppearedNumbers && analysisDataForUI.notAppearedNumbers.length > 0 && (
+                        <NumberStatList title="최근 미출현 번호" items={analysisDataForUI.notAppearedNumbers} icon={EyeOff}/>
+                    )}
+                  </div>
                 </CardContent>
             </Card>
           )}
@@ -298,11 +297,7 @@ function ScientificLottoResultContent() {
                  </CardTitle>
                </CardHeader>
               <CardContent className="p-0 space-y-3">
-                <div className="flex flex-wrap gap-1 items-center">
-                  {set.numbers.map((num) => (
-                    <LottoBall key={`${index}-${num}`} number={num} size="small" />
-                  ))}
-                </div>
+                <LottoNumberList numbers={set.numbers} />
                 <p className="text-base text-muted-foreground whitespace-pre-wrap break-words">
                     <strong className="text-secondary-foreground">AI 추천 근거:</strong> {set.reasoning}
                 </p>
@@ -310,7 +305,7 @@ function ScientificLottoResultContent() {
             </Card>
           ))}
         </CardContent>
-         <CardFooter className="pt-8 border-t flex-col sm:flex-row items-center gap-4">
+         <CardFooter className="pt-8 border-t">
            <Button
              onClick={handleSaveAsImage}
              disabled={isSavingImage}
@@ -321,7 +316,7 @@ function ScientificLottoResultContent() {
            </Button>
         </CardFooter>
       </Card>
-      
+
       <div className="mt-auto pt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
         <Link href="/lotto-recommendation/scientific" passHref>
           <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto">
@@ -364,5 +359,4 @@ export default function ScientificLottoResultPage() {
     </Suspense>
   );
 }
-
     

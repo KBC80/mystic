@@ -18,10 +18,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Home, TestTubeDiagonal, BarChart, CheckSquare, XSquare, TrendingUp, Info, ExternalLink, FileText, Sigma, HelpCircle, Ticket } from 'lucide-react';
+import { Home, TestTubeDiagonal, BarChart, CheckSquare, XSquare, TrendingUp, Info, ExternalLink, FileText, Sigma, HelpCircle, Ticket, ListChecks, TrendingDown, EyeOff } from 'lucide-react';
 import { getInitialScientificLottoData, type ProcessedWinningNumber, type CalculatedAverages } from '@/app/lotto-recommendation/scientific/actions';
 import { cn } from '@/lib/utils';
 
@@ -34,10 +33,10 @@ const createAnalysisFormSchema = (latestDrawNo: number | null) => z.object({
       if (num < 5) return false;
       if (latestDrawNo !== null && num > latestDrawNo) return false;
       return true;
-    }, { 
-      message: latestDrawNo 
-                 ? `분석할 회차 수는 5에서 ${latestDrawNo} 사이의 숫자여야 합니다.` 
-                 : "분석할 회차 수는 5 이상이어야 합니다. (최신 회차 정보 로딩 중)" 
+    }, {
+      message: latestDrawNo
+                 ? `분석할 회차 수는 5에서 ${latestDrawNo} 사이의 숫자여야 합니다.`
+                 : "분석할 회차 수는 5 이상이어야 합니다. (최신 회차 정보 로딩 중)"
     }),
 });
 
@@ -81,27 +80,73 @@ const getLottoBallColorClass = (number: number): string => {
   if (number >= 21 && number <= 30) return 'bg-red-500 text-white';
   if (number >= 31 && number <= 40) return 'bg-gray-600 text-white';
   if (number >= 41 && number <= 45) return 'bg-green-500 text-white';
-  return 'bg-gray-300 text-black'; 
+  return 'bg-gray-300 text-black';
 };
 
 const LottoBall = ({ number, size = 'small' }: { number: number, size?: 'small' | 'medium' }) => {
   const sizeClasses = size === 'small' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-sm';
   return (
-    <div className={`flex items-center justify-center rounded-full font-bold shadow-md ${sizeClasses} ${getLottoBallColorClass(number)}`}>
+    <div className={cn(
+      "flex items-center justify-center rounded-full font-bold shadow-md",
+      sizeClasses,
+      getLottoBallColorClass(number)
+    )}>
       {number}
     </div>
   );
 };
 
+const LottoNumberList = ({ numbers, bonusNumber }: { numbers: number[], bonusNumber?: number }) => (
+  <div className="flex flex-wrap gap-1 items-center">
+    {numbers.map(num => <LottoBall key={num} number={num} size="small" />)}
+    {bonusNumber && (
+      <>
+        <span className="mx-1 text-muted-foreground">+</span>
+        <LottoBall number={bonusNumber} size="small" />
+      </>
+    )}
+  </div>
+);
+
+const StatItem = ({ title, value, icon: Icon }: { title: string, value: string | number, icon?: React.ElementType }) => (
+  <div className="flex items-start gap-2 p-3 bg-background rounded-md shadow-sm">
+    {Icon && <Icon className="h-5 w-5 text-primary mt-0.5" />}
+    <div>
+      <p className="text-sm font-semibold text-secondary-foreground break-words">{title}</p>
+      <p className="text-sm text-muted-foreground break-words">{value}</p>
+    </div>
+  </div>
+);
+
+const NumberStatList = ({ title, items, icon: Icon }: { title: string, items: { num: number, count: number }[] | number[], icon?: React.ElementType }) => (
+  <div>
+    <h4 className="text-md font-semibold text-secondary-foreground mb-2 flex items-center gap-1">
+      {Icon && <Icon className="h-4 w-4" />} {title}
+    </h4>
+    {items.length > 0 ? (
+      <div className="flex flex-wrap gap-2">
+        {(items as any[]).map((item, index) => (
+          <span key={index} className="text-sm bg-muted px-2 py-1 rounded-md text-muted-foreground shadow-sm">
+            {typeof item === 'number' ? item : `${item.num} (${item.count}회)`}
+          </span>
+        ))}
+      </div>
+    ) : (
+      <p className="text-sm text-muted-foreground">데이터 없음</p>
+    )}
+  </div>
+);
+
+
 export default function ScientificLottoRecommendationPage() {
   const router = useRouter();
-  
+
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const [isSubmittingRecommendation, setIsSubmittingRecommendation] = useState(false);
-  
+
   const [error, setError] = useState<string | null>(null);
-  
+
   const [recentDrawsForDisplay, setRecentDrawsForDisplay] = useState<ProcessedWinningNumber[]>([]);
   const [analysisResults, setAnalysisResults] = useState<CalculatedAverages | null>(null);
   const [analyzedDrawsCountInput, setAnalyzedDrawsCountInput] = useState<string>("24");
@@ -115,7 +160,7 @@ export default function ScientificLottoRecommendationPage() {
     defaultValues: {
       numberOfDrawsForAnalysis: "24",
     },
-     mode: "onChange", 
+     mode: "onChange",
   });
 
   const recommendationForm = useForm<RecommendationFormValues>({
@@ -131,7 +176,7 @@ export default function ScientificLottoRecommendationPage() {
       setIsInitialLoading(true);
       setError(null);
       try {
-        const data = await getInitialScientificLottoData(); 
+        const data = await getInitialScientificLottoData();
         if (data.error) {
           setError(data.error);
         } else {
@@ -144,7 +189,7 @@ export default function ScientificLottoRecommendationPage() {
             } else if (currentDefault < 5){
                analysisForm.setValue("numberOfDrawsForAnalysis", "5", { shouldValidate: true });
             }
-             analysisForm.trigger("numberOfDrawsForAnalysis"); 
+             analysisForm.trigger("numberOfDrawsForAnalysis");
           }
         }
       } catch (err) {
@@ -156,21 +201,21 @@ export default function ScientificLottoRecommendationPage() {
     }
     loadInitialData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
+  }, []);
 
   useEffect(() => {
     if (latestDrawNo !== null) {
       const currentValStr = analysisForm.getValues("numberOfDrawsForAnalysis");
       const currentVal = parseInt(currentValStr, 10);
-      
+
       if (!isNaN(currentVal)) {
         if (currentVal > latestDrawNo) {
           analysisForm.setValue("numberOfDrawsForAnalysis", latestDrawNo.toString(), { shouldValidate: true });
         } else if (currentVal < 5) {
            analysisForm.setValue("numberOfDrawsForAnalysis", "5", { shouldValidate: true });
         }
-      } else if (currentValStr === "" && analysisForm.formState.isSubmitted) { 
-      } else if (latestDrawNo < 24 && currentValStr === "24"){ 
+      } else if (currentValStr === "" && analysisForm.formState.isSubmitted) {
+      } else if (latestDrawNo < 24 && currentValStr === "24"){
          analysisForm.setValue("numberOfDrawsForAnalysis", latestDrawNo.toString(), { shouldValidate: true });
       }
       analysisForm.trigger("numberOfDrawsForAnalysis");
@@ -197,7 +242,7 @@ export default function ScientificLottoRecommendationPage() {
         setError(data.error);
       } else {
         if (data.averages) setAnalysisResults(data.averages);
-        if (data.latestDrawNo && !latestDrawNo) setLatestDrawNo(data.latestDrawNo); 
+        if (data.latestDrawNo && !latestDrawNo) setLatestDrawNo(data.latestDrawNo);
       }
     } catch (err) {
       console.error("과거 데이터 분석 오류:", err);
@@ -212,8 +257,8 @@ export default function ScientificLottoRecommendationPage() {
     const queryParams = new URLSearchParams();
     if (values.includeNumbers) queryParams.append('includeNumbers', values.includeNumbers);
     if (values.excludeNumbers) queryParams.append('excludeNumbers', values.excludeNumbers);
-    queryParams.append('numberOfDrawsForAnalysis', analyzedDrawsCountInput); 
-    
+    queryParams.append('numberOfDrawsForAnalysis', analyzedDrawsCountInput);
+
     router.push(`/lotto-recommendation/scientific/result?${queryParams.toString()}`);
   }
 
@@ -239,8 +284,8 @@ export default function ScientificLottoRecommendationPage() {
           <p className="ml-2 text-muted-foreground break-words">최신 당첨 번호 로딩 중...</p>
         </div>
       )}
-      
-      {error && !isInitialLoading && !isLoadingAnalysis && !isSubmittingRecommendation && ( 
+
+      {error && !isInitialLoading && !isLoadingAnalysis && !isSubmittingRecommendation && (
         <Alert variant="destructive" className="my-4">
           <AlertTitle>오류 발생</AlertTitle>
           <AlertDescription className="break-words">{error}</AlertDescription>
@@ -252,42 +297,21 @@ export default function ScientificLottoRecommendationPage() {
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2"><BarChart className="h-5 w-5 text-secondary-foreground" />최근 당첨 번호 (최신 5회)</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="whitespace-nowrap">회차</TableHead>
-                    <TableHead className="whitespace-nowrap">추첨일</TableHead>
-                    <TableHead>당첨 번호</TableHead>
-                    <TableHead>보너스</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentDrawsForDisplay.map((win) => (
-                    <TableRow key={win.drwNo}>
-                      <TableCell className="whitespace-nowrap">{win.drwNo}회</TableCell>
-                      <TableCell className="whitespace-nowrap">{win.drwNoDate}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {win.numbers.map(num => (
-                            <LottoBall key={num} number={num} size="small" />
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <LottoBall number={win.bnusNo} size="small" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-             <CardDescription className="text-xs mt-2 text-muted-foreground break-words">* 최신 5회차의 당첨번호입니다. 실제 데이터는 동행복권 API를 통해 제공됩니다.</CardDescription>
+          <CardContent className="space-y-3">
+            {recentDrawsForDisplay.map((win) => (
+              <div key={win.drwNo} className="p-3 border rounded-md bg-background shadow-sm">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-semibold text-secondary-foreground">{win.drwNo}회</span>
+                  <span className="text-xs text-muted-foreground">{win.drwNoDate}</span>
+                </div>
+                <LottoNumberList numbers={win.numbers} bonusNumber={win.bnusNo} />
+              </div>
+            ))}
+            <CardDescription className="text-xs mt-2 text-muted-foreground break-words">* 최신 5회차의 당첨번호입니다. 실제 데이터는 동행복권 API를 통해 제공됩니다.</CardDescription>
           </CardContent>
         </Card>
       )}
-      
+
       <Card className="shadow-md">
         <CardHeader>
           <CardTitle className="text-xl flex items-center gap-2">
@@ -306,12 +330,12 @@ export default function ScientificLottoRecommendationPage() {
                         <FileText className="h-4 w-4"/> 분석할 최근 회차 수 (5 ~ {latestDrawNo ?? '최신회차'})
                     </FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        min="5" 
+                      <Input
+                        type="number"
+                        min="5"
                         max={latestDrawNo?.toString()}
-                        placeholder={latestDrawNo ? `예: ${Math.min(24, latestDrawNo)}` : "예: 24"} 
-                        {...field} 
+                        placeholder={latestDrawNo ? `예: ${Math.min(24, latestDrawNo)}` : "예: 24"}
+                        {...field}
                         disabled={latestDrawNo === null}
                       />
                     </FormControl>
@@ -326,7 +350,7 @@ export default function ScientificLottoRecommendationPage() {
           </Form>
         </CardContent>
       </Card>
-      
+
       {isLoadingAnalysis && (
         <div className="flex justify-center items-center p-6">
           <LoadingSpinner size={28} />
@@ -343,70 +367,26 @@ export default function ScientificLottoRecommendationPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                <p className="text-base text-muted-foreground break-words">
-                    평균 당첨 번호 합계: <strong className="text-foreground">{analysisResults.averageSum.toFixed(1)}</strong> (일반적인 범위: 100-180)
-                </p>
-                <p className="text-base text-muted-foreground break-words">
-                    가장 흔한 짝수:홀수 비율: <strong className="text-foreground">{analysisResults.averageEvenOddRatio}</strong>
-                </p>
-
-                 {(analysisResults.frequentNumbers && analysisResults.frequentNumbers.length > 0) || (analysisResults.leastFrequentNumbers && analysisResults.leastFrequentNumbers.length > 0) ? (
-                    <div className="mt-3 overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[150px] whitespace-nowrap">구분</TableHead>
-                            {Array.from({ length: Math.max(analysisResults.frequentNumbers?.length || 0, analysisResults.leastFrequentNumbers?.length || 0, 1) }).map((_, index) => (
-                              <TableHead key={`header-num-${index}`} className="text-center whitespace-nowrap">번호 {index + 1}</TableHead>
-                            ))}
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {analysisResults.frequentNumbers && analysisResults.frequentNumbers.length > 0 && (
-                            <>
-                              <TableRow>
-                                <TableCell rowSpan={2} className="font-semibold align-middle text-foreground whitespace-nowrap">자주 당첨된 번호</TableCell>
-                                {analysisResults.frequentNumbers.map(item => (
-                                  <TableCell key={`freq-num-${item.num}`} className="text-center font-medium whitespace-nowrap">{item.num}</TableCell>
-                                ))}
-                                {Array.from({ length: Math.max(0, Math.max(analysisResults.frequentNumbers?.length || 0, analysisResults.leastFrequentNumbers?.length || 0) - analysisResults.frequentNumbers.length) }).map((_, i) => <TableCell key={`freq-empty-pad-${i}`} />)}
-                              </TableRow>
-                              <TableRow>
-                                {analysisResults.frequentNumbers.map(item => (
-                                  <TableCell key={`freq-count-${item.num}`} className="text-center text-xs text-muted-foreground whitespace-nowrap">({item.count}회)</TableCell>
-                                ))}
-                                {Array.from({ length: Math.max(0, Math.max(analysisResults.frequentNumbers?.length || 0, analysisResults.leastFrequentNumbers?.length || 0) - analysisResults.frequentNumbers.length) }).map((_, i) => <TableCell key={`freq-empty-count-pad-${i}`} />)}
-                              </TableRow>
-                            </>
-                          )}
-                          {analysisResults.leastFrequentNumbers && analysisResults.leastFrequentNumbers.length > 0 && (
-                             <>
-                              <TableRow>
-                                <TableCell rowSpan={2} className="font-semibold align-middle text-foreground whitespace-nowrap">가장 적게 당첨된 번호</TableCell>
-                                {analysisResults.leastFrequentNumbers.map(item => (
-                                  <TableCell key={`least-num-${item.num}`} className="text-center font-medium whitespace-nowrap">{item.num}</TableCell>
-                                ))}
-                                 {Array.from({ length: Math.max(0, Math.max(analysisResults.frequentNumbers?.length || 0, analysisResults.leastFrequentNumbers?.length || 0) - analysisResults.leastFrequentNumbers.length) }).map((_, i) => <TableCell key={`least-empty-pad-${i}`} />)}
-                              </TableRow>
-                              <TableRow>
-                                {analysisResults.leastFrequentNumbers.map(item => (
-                                  <TableCell key={`least-count-${item.num}`} className="text-center text-xs text-muted-foreground whitespace-nowrap">({item.count}회)</TableCell>
-                                ))}
-                                {Array.from({ length: Math.max(0, Math.max(analysisResults.frequentNumbers?.length || 0, analysisResults.leastFrequentNumbers?.length || 0) - analysisResults.leastFrequentNumbers.length) }).map((_, i) => <TableCell key={`least-empty-count-pad-${i}`} />)}
-                              </TableRow>
-                            </>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground break-words">번호 빈도수 데이터를 표시할 수 없습니다.</p>
-                  )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <StatItem title="평균 당첨 번호 합계" value={`${analysisResults.averageSum.toFixed(1)} (일반적 범위: 100-180)`} icon={Sigma} />
+                    <StatItem title="가장 흔한 짝수:홀수 비율" value={analysisResults.averageEvenOddRatio} icon={ListChecks} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+                    {analysisResults.frequentNumbers && analysisResults.frequentNumbers.length > 0 && (
+                        <NumberStatList title="자주 당첨된 번호" items={analysisResults.frequentNumbers} icon={TrendingUp} />
+                    )}
+                    {analysisResults.leastFrequentNumbers && analysisResults.leastFrequentNumbers.length > 0 && (
+                        <NumberStatList title="가장 적게 당첨된 번호" items={analysisResults.leastFrequentNumbers} icon={TrendingDown}/>
+                    )}
+                    {analysisResults.notAppearedNumbers && analysisResults.notAppearedNumbers.length > 0 && (
+                        <NumberStatList title="최근 미출현 번호" items={analysisResults.notAppearedNumbers} icon={EyeOff}/>
+                    )}
+                </div>
             </CardContent>
         </Card>
       )}
 
-      {analysisResults && !isLoadingAnalysis && ( 
+      {analysisResults && !isLoadingAnalysis && (
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
@@ -479,5 +459,4 @@ export default function ScientificLottoRecommendationPage() {
     </div>
   );
 }
-
     
