@@ -119,7 +119,7 @@ const InterpretNameOutputSchema = z.object({
     }).describe('자원오행 분석 (사주 보완 여부)'),
 
     iChingHexagram: z.object({
-      hexagramName: z.string().describe('이름의 수리 또는 특성을 바탕으로 도출된 주역 64괘 중 관련성이 높은 괘의 이름 (예: 건위천, 곤위지 등)'),
+      hexagramName: z.string().describe('이름의 수리 또는 특성을 바탕으로 도출된 주역 64괘 중 관련성이 높은 괘의 이름 (예: 건위천, 곤위지 등). 제공되는 iching_64_data.json 파일의 "name" 필드와 정확히 일치해야 하며, "괘" 접미사는 붙이지 마십시오.'),
       hexagramImage: z.string().optional().describe('괘의 이미지 (예: ䷀ (중천건), ䷁ (중지곤) - 텍스트 또는 이미지 URL)'),
       interpretation: z.string().describe('해당 괘의 의미와 이름의 운명에 대한 간략하고 이해하기 쉬운 해석입니다 (중학생 수준).'),
     }).describe('주역 괘 분석'),
@@ -140,20 +140,21 @@ const simplifyHexagramPrompt = ai.definePrompt({
   name: 'simplifyHexagramPrompt',
   input: { schema: z.object({
     hexagramName: z.string(),
-    originalInterpretation: z.string(),
+    originalInterpretation: z.string().describe("주역 64괘 중 해당 괘에 대한 전통적인 상세 설명입니다. 이 내용을 반드시 충실히 참고하여 해석해야 합니다."),
     userName: z.string(),
   })},
   output: { schema: z.object({
-    simplifiedInterpretation: z.string().describe("중학생도 이해하기 쉬운 괘의 해설입니다.")
+    simplifiedInterpretation: z.string().describe("제공된 원본 해설을 바탕으로, 중학생도 이해하기 쉽게 풀어쓴 긍정적이고 희망적인 해설입니다.")
   })},
-  prompt: `당신은 주역(周易)에 정통한 학자이며, 복잡한 주역의 지혜를 일반인도 이해하기 쉽게 설명하는 데 능숙합니다. 다음은 {{{userName}}}님의 이름과 관련된 주역 {{{hexagramName}}} 괘의 원본 해설입니다:
+  prompt: `당신은 주역(周易)에 정통한 학자이며, 복잡한 주역의 지혜를 일반인도 이해하기 쉽게 설명하는 데 능숙합니다. 
+다음은 사용자 {{{userName}}}님의 이름과 관련된 주역 {{{hexagramName}}} 괘에 대한 **핵심 참고 자료**입니다. 
+**이 내용을 반드시 충실히 반영하여, 중학생도 이해하기 쉬운 평이하고 명료한 언어로 풀어 설명해주십시오.** 원본 해설의 핵심 의미를 벗어나지 않도록 주의해야 합니다.
 
---- 원본 해설 ---
+--- 참고 자료 ({{hexagramName}} 괘 원본 해설) ---
 {{{originalInterpretation}}}
---- 원본 해설 끝 ---
+--- 참고 자료 끝 ---
 
-이 해설의 핵심적인 의미를 유지하면서, 마치 옆에서 친절하게 설명해 주듯이, 평이하고 명료한 언어로 풀어 설명해주십시오. 중학생도 이해할 수 있을 정도의 쉬운 비유나 일상적인 예를 사용하면 더욱 좋습니다. 한자어나 전문 용어 사용은 최대한 피하고, 꼭 필요하다면 쉬운 말로 풀어 설명해주세요. 문장은 짧고 명확하게 작성해주세요.
-{{{userName}}}님이 이 설명을 통해 자신의 삶에 대한 긍정적인 통찰과 지혜를 얻을 수 있도록 도와주십시오.
+위 참고 자료를 바탕으로, {{{userName}}}님이 이 설명을 통해 자신의 삶에 대한 긍정적인 통찰과 지혜를 얻을 수 있도록, 희망적이고 이해하기 쉬운 메시지로 전달해주십시오. 한자어나 전문 용어 사용은 최소화하고, 필요하다면 쉬운 말로 풀어 설명해주십시오. 문장은 짧고 명확하게 작성해주세요.
 `,
 });
 
@@ -194,7 +195,7 @@ const nameInterpretationPrompt = ai.definePrompt({
         *   **정격(貞格, 말년운/총운 60세 이후):** 성씨와 이름의 모든 글자 획수의 총합. 산출된 수를 81수리표에 대입하여 길흉과 의미를 해석합니다. 인생 전체를 아우르는 총운이자 노년기의 건강, 안정, 자손과의 관계, 삶의 마무리 등을 **81수리 이론의 해당 번호 설명을 참고하여 종합적이고 심층적으로 조망**합니다. name 필드 값은 "정격(貞格) - 말년운/총운 (60세 이후)" 이어야 합니다.
         *   각 격(원형이정)에 대해 해당 운세 시기, 수리 번호, 길흉 등급('대길', '길', '평', '흉', '대흉', 또는 '양운수', '상운수' 등 81수리 이론의 분류에 따름), 그리고 그 수리가 의미하는 성격, 건강, 재물, 대인관계, 사회적 성취 등에 대한 구체적이고 심층적인 해설을 제공합니다. 해석은 단순한 키워드 나열이 아니라, 실제 삶에 적용될 수 있는 통찰력 있는 설명이어야 합니다.
     *   **자원오행 분석 (사주 보완):** 이름에 사용된 한자(한자 이름의 경우)의 본래 뜻(자의)이 가지는 오행(자원오행)을 분석합니다. 이 자원오행이 사용자의 사주에서 부족한 오행(용신/희신)을 효과적으로 보완하는지, 또는 오히려 기신(忌神)을 강화시키는지 등을 심층적으로 평가합니다. (한글 이름일 경우, 해당 분석은 제한되거나 일반론으로 설명합니다.)
-    *   **주역 괘 도출:** 이름의 전체 획수(총격 수리) 또는 이름의 특성을 고려하여 가장 관련성이 높은 주역 64괘 중 하나를 도출하고, 해당 괘의 기본적인 이름 (예: "지천태")과 괘의 이미지(선택 사항)만 기록합니다. 'interpretation' 필드는 비워두십시오.
+    *   **주역 괘 도출 (iChingHexagram.hexagramName):** 이름의 전체 획수(총격 수리) 또는 이름의 특성을 고려하여 가장 관련성이 높은 주역 64괘 중 하나를 도출하고, 해당 괘의 **한글 이름 (예: "건위천", "지천태" 등 `iching_64_data.json` 파일의 "name" 필드와 정확히 일치해야 하며, "괘" 접미사는 붙이지 마십시오.)** 과 괘의 이미지(선택 사항)만 기록합니다. 'interpretation' 필드는 비워두십시오.
 3.  **종합 평가 및 조언:**
     *   위 모든 분석(사주, 음양, 수리, 자원오행 등)을 종합하여 이름에 대한 최종 점수(100점 만점)와 평가 등급('매우 좋음', '좋음', '보통', '주의 필요', '나쁨')을 산정합니다. 간단한 요약 평가 문구와 함께 인생 총운에 대한 간략한 요약 (overallFortuneSummary)도 포함해주십시오.
     *   이름의 장점, 단점, 그리고 삶에 미치는 영향에 대한 전반적인 조언을 제공합니다.
@@ -209,7 +210,7 @@ const nameInterpretationPrompt = ai.definePrompt({
 **3. 상세 분석 섹션 (detailedAnalysis):**
     *   ... (다른 항목들) ...
     *   **iChingHexagram (주역 괘 분석):**
-        *   hexagramName: 도출된 주역 괘의 이름 (예: 지천태괘)
+        *   hexagramName: 도출된 주역 괘의 이름 (예: 지천태). `iching_64_data.json` 파일의 "name" 필드와 정확히 일치해야 하며, "괘" 접미사는 붙이지 마십시오.
         *   hexagramImage: (선택 사항) 괘의 유니코드 문자 (예: ䷊)
         *   interpretation: **이 필드는 비워두거나 "추후 제공 예정"으로 설정하십시오.**
 ... (나머지 구성안 내용 참조) ...
@@ -244,7 +245,7 @@ export async function interpretName(input: InterpretNameInput): Promise<Interpre
 
     if (initialOutput.detailedAnalysis?.iChingHexagram?.hexagramName) {
       let hexagramNameFromLLM = initialOutput.detailedAnalysis.iChingHexagram.hexagramName;
-      // "괘" 접미사 제거
+      // "괘" 접미사 제거 (LLM이 실수로 붙였을 경우 대비)
       let cleanedHexagramName = hexagramNameFromLLM.endsWith("괘")
         ? hexagramNameFromLLM.slice(0, -1)
         : hexagramNameFromLLM;
@@ -261,14 +262,14 @@ export async function interpretName(input: InterpretNameInput): Promise<Interpre
         const { output: simplifiedResult } = await simplifyHexagramPrompt(simplifyInput);
         if (simplifiedResult?.simplifiedInterpretation) {
           finalOutput.detailedAnalysis.iChingHexagram.interpretation = simplifiedResult.simplifiedInterpretation;
-          finalOutput.detailedAnalysis.iChingHexagram.hexagramName = cleanedHexagramName; // Update to cleaned name
+          finalOutput.detailedAnalysis.iChingHexagram.hexagramName = cleanedHexagramName; 
         } else {
           console.warn(`주역 괘 단순화 실패: ${cleanedHexagramName}`);
-          finalOutput.detailedAnalysis.iChingHexagram.interpretation = `"${cleanedHexagramName}" 괘의 의미를 요약하는 데 실패했습니다. 원본 해설의 일부: ${hexagramInfo.description.substring(0,100)}...`;
+          finalOutput.detailedAnalysis.iChingHexagram.interpretation = `"${cleanedHexagramName}" 괘의 의미를 요약하는 데 실패했습니다. 원본 해설의 일부: ${hexagramInfo.description.substring(0,100)}... (AI가 해석을 생성하지 못했습니다.)`;
         }
       } else {
-        console.warn(`주역 괘 정보 찾기 실패: ${cleanedHexagramName} (원본: ${hexagramNameFromLLM})`);
-        finalOutput.detailedAnalysis.iChingHexagram.interpretation = `"${cleanedHexagramName}" 괘에 대한 상세 정보를 찾을 수 없어 해석을 제공할 수 없습니다.`;
+        console.warn(`주역 괘 정보 찾기 실패: ${cleanedHexagramName} (LLM 반환값: ${hexagramNameFromLLM})`);
+        finalOutput.detailedAnalysis.iChingHexagram.interpretation = `"${cleanedHexagramName}" 괘에 대한 상세 정보를 찾을 수 없어 해석을 제공할 수 없습니다. (LLM이 반환한 괘 이름: ${hexagramNameFromLLM})`;
       }
     } else if (finalOutput.detailedAnalysis?.iChingHexagram) {
          finalOutput.detailedAnalysis.iChingHexagram.interpretation = "관련된 주역 괘를 찾지 못했습니다.";
@@ -325,3 +326,4 @@ const interpretNameFlow = ai.defineFlow(
   },
   interpretName 
 );
+
