@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-      <meta name="google-site-verification" content="FNr-ebxLHFBpnaQof_fNzl_Rk3KA7xty7poctXicMTY" />
+      <meta name="google-site-verification" content="5Q7IG7QLPBdB2UJ0ZWf2z9ITh-8SO0fq5UI9bhlerDs" /> 
       <meta name="naver-site-verification" content="0da5f9a2c067d35668f801c183d865aae7d8ea1e" />
       <meta name="msvalidate.01" content="726E5D486B11503DB517C26BE9744A3E" />
       {/* Google 애드센스 광고 스크립트 */}
